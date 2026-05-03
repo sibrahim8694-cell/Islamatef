@@ -402,15 +402,26 @@ export default function EnglishPage() {
     }
   }
 
-  function toggleListening() {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('Your browser does not support speech recognition. Please try Chrome.');
+  async function toggleListening() {
+    if (isListening) {
+      setIsListening(false);
       return;
     }
 
-    if (isListening) {
-      setIsListening(false);
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (err) {
+      console.error('Microphone permission denied', err);
+      alert('الرجاء السماح بصلاحية الميكروفون من إعدادات المتصفح أو التطبيق.');
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('متصفحك لا يدعم التعرف على الصوت. الرجاء استخدام Chrome أو Safari الحديث.');
       return;
     }
 
@@ -432,6 +443,13 @@ export default function EnglishPage() {
 
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error', event.error);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        alert('لقد تم رفض صلاحية الميكروفون. يرجى تفعيلها من إعدادات النظام للتطبيق.');
+      } else if (event.error === 'no-speech') {
+        /* User didn't speak, ignore or alert mildly */
+      } else {
+        alert('حدث خطأ في النظام الصوتي، الرجاء المحاولة مرة أخرى.');
+      }
       setIsListening(false);
     };
 
@@ -439,7 +457,12 @@ export default function EnglishPage() {
       setIsListening(false);
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error(e);
+      setIsListening(false);
+    }
   };
 
 
@@ -657,15 +680,26 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
   const step = lesson.steps[currentStepIdx];
   const progressPercent = ((currentStepIdx) / lesson.steps.length) * 100;
 
-  function toggleListening() {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('Your browser does not support speech recognition. Please try Chrome.');
+  async function toggleListening() {
+    if (isListening) {
+      setIsListening(false);
       return;
     }
 
-    if (isListening) {
-      setIsListening(false);
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (err) {
+      console.error('Microphone permission denied', err);
+      alert('الرجاء السماح بصلاحية الميكروفون من إعدادات المتصفح أو التطبيق.');
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('متصفحك لا يدعم التعرف على الصوت. الرجاء استخدام Chrome أو Safari الحديث.');
       return;
     }
 
@@ -686,6 +720,13 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
 
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error', event.error);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        alert('لقد تم رفض صلاحية الميكروفون. يرجى تفعيلها من إعدادات النظام للتطبيق.');
+      } else if (event.error === 'no-speech') {
+        /* ignore */
+      } else {
+        alert('حدث خطأ في النظام الصوتي، الرجاء المحاولة مرة أخرى.');
+      }
       setIsListening(false);
     };
 
@@ -693,7 +734,12 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
       setIsListening(false);
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error(e);
+      setIsListening(false);
+    }
   };
 
   const speak = (text: string) => {
