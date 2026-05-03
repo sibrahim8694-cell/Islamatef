@@ -1,0 +1,14 @@
+[
+  "Mohamed Siddiq al-Minshawi",
+  "AbdulBaset AbdulSamad",
+  "AbdulBaset AbdulSamad",
+  "Abu Bakr al-Shatri",
+  "Hani ar-Rifai",
+  "Mahmoud Khalil Al-Husary",
+  "Mahmoud Khalil Al-Husary",
+  "Mishari Rashid al-`Afasy",
+  "Sa`ud ash-Shuraym",
+  "Mohamed al-Tablawi",
+  "Abdur-Rahman as-Sudais",
+  "Mohamed Siddiq al-Minshawi"
+]
