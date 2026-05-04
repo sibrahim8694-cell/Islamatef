@@ -1,37 +1,73 @@
 const globalUtterances: SpeechSynthesisUtterance[] = [];
 
+// Initialize audio element globally
+let globalAudioEl: HTMLAudioElement | null = null;
+
+function initAudioElement() {
+  if (typeof document === 'undefined') return null;
+  if (globalAudioEl) return globalAudioEl;
+  
+  globalAudioEl = document.getElementById('app-tts-audio') as HTMLAudioElement;
+  if (!globalAudioEl) {
+    globalAudioEl = document.createElement('audio');
+    globalAudioEl.id = 'app-tts-audio';
+    globalAudioEl.style.display = 'none';
+    globalAudioEl.setAttribute('playsinline', ''); // Essential for iOS
+    document.body.appendChild(globalAudioEl);
+  }
+  return globalAudioEl;
+}
+
+// Unlock audio on first native interaction
+if (typeof document !== 'undefined') {
+  const unlockAudio = () => {
+    const audioEl = initAudioElement();
+    if (audioEl) {
+      audioEl.play().catch(() => {});
+      audioEl.pause();
+      audioEl.src = 'data:audio/mp3;base64,//MkxAAQ...'; // Empty valid audio to unlock
+    }
+    document.removeEventListener('touchstart', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+  };
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+  document.addEventListener('click', unlockAudio, { once: true });
+}
+
 export function playTTS(text: string, lang: string = 'en-US') {
   try {
     const isEn = lang.startsWith('en');
     const gTTSLang = isEn ? 'en-US' : 'ar';
     
-    // For very long texts (stories), prioritize native TTS API to avoid Google TTS limit.
     if (text.length > 150) {
       nativeSpeak(text, lang);
       return;
     }
 
     const cleanText = text.substring(0, 150);
-    const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${gTTSLang}&q=${encodeURIComponent(cleanText)}`;
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${gTTSLang}&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
     
-    let audioEl = document.getElementById('app-tts-audio') as HTMLAudioElement;
+    const audioEl = initAudioElement();
     if (!audioEl) {
-      audioEl = document.createElement('audio');
-      audioEl.id = 'app-tts-audio';
-      // Append to DOM to increase chance of working in WebViews
-      document.body.appendChild(audioEl);
+      nativeSpeak(text, lang);
+      return;
     }
     
+    audioEl.pause();
     audioEl.src = url;
-    audioEl.crossOrigin = "anonymous";
+    audioEl.removeAttribute('crossorigin');
+    audioEl.load();
     
-    const playPromise = audioEl.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.warn("Audio fallback to SpeechSynthesis:", err);
-        nativeSpeak(text, lang);
-      });
-    }
+    // Play with a slight delay to ensure the load is recognized by WebView
+    setTimeout(() => {
+      const playPromise = audioEl.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("Audio fallback to SpeechSynthesis:", err);
+          nativeSpeak(text, lang);
+        });
+      }
+    }, 50);
   } catch (err) {
     console.error("TTS error:", err);
     nativeSpeak(text, lang);
