@@ -467,8 +467,6 @@ export default function KidsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {[
               { name: 'تعلم مع زكريا', desc: 'قناة ممتازة لتعليم الأطفال الحروف والقراءة، والوضوء والصلاة والسور القصيرة بأسلوب كرتوني.', url: 'https://www.youtube.com/c/Learnwithzakaria', icon: '🕌' },
-              { name: 'قناة سراج - Siraj', desc: 'مسلسل كرتوني إبداعي يعلم الأطفال القراءة والكتابة واللغة العربية الفصحى بشكل ممتع وجذاب.', url: 'https://www.youtube.com/c/SirajShow', icon: '📚' },
-              { name: 'أسرتنا - Osratouna', desc: 'أناشيد وقصص دينية وتعليمية تغرس القيم الإسلامية والأخلاق في الأطفال بشكل مسلي.', url: 'https://www.youtube.com/c/OsratounaTv', icon: '👨‍👩‍👧‍👦' },
               { name: 'طيور الجنة بيبي - تعليمي', desc: 'تضم مجموعة كبيرة من الأناشيد لتعليم الحروف والأرقام وأسماء الحيوانات.', url: 'https://www.youtube.com/user/toyoraljannah', icon: '🐦' },
               { name: 'عدنان معلم القرآن', desc: 'تطبيق موجه للأطفال لتعليم سور القرآن الكريم والأذكار وحروف الهجاء والتلاوة.', url: 'https://www.youtube.com/@adnanquran', icon: '📖' },
             ].map(channel => (
