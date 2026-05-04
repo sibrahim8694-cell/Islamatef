@@ -84,11 +84,11 @@ export default function StudentsPage() {
   };
 
   const resourceLinks = [
-    { title: "بوابة الثانوية العامة", url: "http://thanwya.moe.gov.eg", desc: "الموقع الرسمي لتحميل المناهج والملزمات.", icon: <BookOpen className="text-indigo-600" /> },
-    { title: "بنك المعرفة المصري (EKB)", url: "https://www.ekb.eg", desc: "أكبر مكتبة رقمية تعليمية في الشرق الأوسط.", icon: <Library className="text-blue-500" /> },
-    { title: "منصة مدرستنا", url: "https://www.madrasetna.eg", desc: "مصدر المذكرات والكتب الرسمية لجميع المراحل.", icon: <Book className="text-emerald-500" /> },
+    { title: "موقع وزارة التربية والتعليم", url: "https://moe.gov.eg", desc: "الموقع الرسمي، للقرارات والمقررات الدراسية.", icon: <BookOpen className="text-indigo-600" /> },
+    { title: "منصة إدراك التعليمية", url: "https://www.edraak.org", desc: "دورات مجانية ومناهج داعمة للتعليم المدرسي لجميع المراحل.", icon: <Library className="text-blue-500" /> },
+    { title: "قناة مدرستنا (يوتيوب)", url: "https://www.youtube.com/c/Madrasetna", desc: "شرح مرئي متميز للمناهج الرسمية من قبل خبراء.", icon: <Book className="text-emerald-500" /> },
     { title: "موقع ملزمتي", url: "https://www.mlzamty.com", desc: "أفضل المذكرات والمراجعات النهائية للتحميل المباشر.", icon: <Download className="text-amber-500" /> },
-    { title: "قناة نفهم (Nafham)", url: "https://www.nafham.com", desc: "شرح المناهج العربية بأسلوب مبسط وشامل.", icon: <Globe className="text-rose-500" /> },
+    { title: "قناة نفهم التعليمية", url: "https://www.youtube.com/user/NafhamEducation", desc: "شرح فيديو للمناهج العربية بأسلوب مبسط وشامل.", icon: <Globe className="text-rose-500" /> },
   ];
 
   return (

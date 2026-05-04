@@ -369,10 +369,9 @@ export default function EnglishPage() {
   function speak(text: string, e?: React.MouseEvent) {
     if (e) e.stopPropagation();
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
-      utterance.rate = 0.9;
+      // utterance.rate = 0.9;
       window.speechSynthesis.speak(utterance);
     }
   }
@@ -744,9 +743,9 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
 
   const speak = (text: string) => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
+      // utterance.rate = 0.9;
       window.speechSynthesis.speak(utterance);
     }
   };

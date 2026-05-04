@@ -182,10 +182,9 @@ export default function KidsPage() {
 
   const speak = (text: string, lang: string = 'ar-SA') => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
-      utterance.rate = 0.8;
+      // utterance.rate = 0.8;
       window.speechSynthesis.speak(utterance);
     }
   };
