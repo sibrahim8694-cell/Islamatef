@@ -85,7 +85,6 @@ export default function StudentsPage() {
 
   const resourceLinks = [
     { title: "ملزمتي", url: "https://www.mlzamty.com", desc: "افضل المذكرات والمراجعات النهائية للتحميل المباشر.", icon: <Download className="text-amber-500" /> },
-    { title: "مدرستي اون لاين", url: "https://www.madrsa-online.com/", desc: "منصة شاملة لتحميل المذكرات والملخصات لجميع الصفوف.", icon: <Library className="text-emerald-500" /> },
     { title: "موقع الامتحان التعليمي", url: "https://www.exam-eg.com/", desc: "مراجعات وملزمات وكتب خارجية لجميع المراحل.", icon: <Book className="text-sky-500" /> },
   ];
 
