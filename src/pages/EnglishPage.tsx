@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { playTTS } from '../lib/tts';
 import { motion, AnimatePresence } from 'motion/react';
 import { PlayCircle, CheckCircle2, ChevronRight, X, Volume2, Bot, Send, Award, ArrowRight, Check, Trophy, BookOpen, Zap, Headphones, MessageSquare, GraduationCap, Search, Mic, MicOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -368,33 +369,7 @@ export default function EnglishPage() {
 
   function speak(text: string, e?: React.MouseEvent) {
     if (e) e.stopPropagation();
-    try {
-      const gTTSLang = 'en-US';
-      const cleanText = text.substring(0, 150); // limit length for TTS API
-      const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${gTTSLang}&q=${encodeURIComponent(cleanText)}`;
-      const audio = new Audio(url);
-      
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Fallback if audio blocks
-          if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            window.speechSynthesis.speak(utterance);
-          }
-        });
-      }
-    } catch {
-      // Fallback
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
-      }
-    }
+    playTTS(text, 'en-US');
   }
 
   async function handleChat(e?: React.FormEvent, manualMessage?: string) {
@@ -763,31 +738,7 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
   };
 
   const speak = (text: string) => {
-    try {
-      const gTTSLang = 'en-US';
-      const cleanText = text.substring(0, 150);
-      const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${gTTSLang}&q=${encodeURIComponent(cleanText)}`;
-      const audio = new Audio(url);
-      
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            window.speechSynthesis.speak(utterance);
-          }
-        });
-      }
-    } catch {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
-      }
-    }
+    playTTS(text, 'en-US');
   };
 
   const handleNext = () => {

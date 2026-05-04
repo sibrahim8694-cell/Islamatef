@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { playTTS } from '../lib/tts';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Pencil, Music, Star, Eraser, Volume2, 
@@ -180,43 +181,9 @@ export default function KidsPage() {
     { letter: 'ي', word: 'يد', symbol: '✋', color: 'bg-orange-50 text-orange-800' },
   ];
 
-  const speak = (text: string, lang: string = 'ar-SA') => {
-    try {
-      const gTTSLang = lang.startsWith('en') ? 'en-US' : 'ar';
-      
-      // Use SpeechSynthesis natively for very long texts (like stories)
-      if (text.length > 150) {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = lang;
-          window.speechSynthesis.speak(utterance);
-        }
-        return;
-      }
-
-      const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${gTTSLang}&q=${encodeURIComponent(text)}`;
-      const audio = new Audio(url);
-      
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang;
-            window.speechSynthesis.speak(utterance);
-          }
-        });
-      }
-    } catch {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        window.speechSynthesis.speak(utterance);
-      }
-    }
+  const speak = (text: string, lang: string = 'ar-SA', e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    playTTS(text, lang);
   };
 
   const arabicNumbers = [
