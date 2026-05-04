@@ -6,7 +6,7 @@ import {
   Gamepad2, BookOpen, Calculator, Trophy, 
   Settings, Heart, Sparkles, LayoutPanelLeft,
   ArrowRight, CheckCircle2, Layout, User, X, 
-  PlayCircle, Download
+  PlayCircle, Download, Youtube, ExternalLink
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -454,6 +454,43 @@ export default function KidsPage() {
                <span className="font-bold text-center text-sm">{badge.label}</span>
              </div>
            ))}
+        </div>
+      </div>
+
+      {/* Youtube Channels for Kids */}
+      <div className="bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl" dir="rtl">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-red-600/20 rounded-full blur-3xl -ml-32 -mt-32"></div>
+        <div className="relative z-10">
+          <h2 className="text-3xl font-black mb-8 flex items-center gap-4">
+            <Youtube className="text-red-500" size={40} /> قنوات يوتيوب تعليمية ومفيدة للأطفال 📺
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {[
+              { name: 'تعلم مع زكريا', desc: 'قناة ممتازة لتعليم الأطفال الحروف والقراءة، والوضوء والصلاة والسور القصيرة بأسلوب كرتوني.', url: 'https://www.youtube.com/c/Learnwithzakaria', icon: '🕌' },
+              { name: 'قناة سراج - Siraj', desc: 'مسلسل كرتوني إبداعي يعلم الأطفال القراءة والكتابة واللغة العربية الفصحى بشكل ممتع وجذاب.', url: 'https://www.youtube.com/c/SirajShow', icon: '📚' },
+              { name: 'أسرتنا - Osratouna', desc: 'أناشيد وقصص دينية وتعليمية تغرس القيم الإسلامية والأخلاق في الأطفال بشكل مسلي.', url: 'https://www.youtube.com/c/OsratounaTv', icon: '👨‍👩‍👧‍👦' },
+              { name: 'طيور الجنة بيبي - تعليمي', desc: 'تضم مجموعة كبيرة من الأناشيد لتعليم الحروف والأرقام وأسماء الحيوانات.', url: 'https://www.youtube.com/user/toyoraljannah', icon: '🐦' },
+              { name: 'عدنان معلم القرآن', desc: 'تطبيق موجه للأطفال لتعليم سور القرآن الكريم والأذكار وحروف الهجاء والتلاوة.', url: 'https://www.youtube.com/@adnanquran', icon: '📖' },
+            ].map(channel => (
+              <motion.div
+                key={channel.name}
+                whileHover={{ scale: 1.03, y: -4 }}
+                onClick={() => window.open(channel.url, '_blank')}
+                className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl cursor-pointer hover:bg-white/20 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mb-4 shadow-sm">
+                    {channel.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{channel.name}</h3>
+                  <p className="text-white/70 text-sm leading-relaxed font-medium pb-4">{channel.desc}</p>
+                </div>
+                <div className="mt-auto flex items-center gap-2 text-white font-bold text-sm bg-red-600/80 w-max px-4 py-2 rounded-xl">
+                  زيارة القناة <ExternalLink size={16} />
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
