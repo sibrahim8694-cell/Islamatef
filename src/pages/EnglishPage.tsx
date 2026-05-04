@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { playTTS } from '../lib/tts';
 import { motion, AnimatePresence } from 'motion/react';
-import { PlayCircle, CheckCircle2, ChevronRight, X, Volume2, Bot, Send, Award, ArrowRight, Check, Trophy, BookOpen, Zap, Headphones, MessageSquare, GraduationCap, Search, Mic, MicOff } from 'lucide-react';
+import { PlayCircle, CheckCircle2, ChevronRight, X, Volume2, Bot, Send, Award, ArrowRight, Check, Trophy, BookOpen, Zap, Headphones, MessageSquare, GraduationCap, Search, Mic, MicOff, Youtube, ExternalLink } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { curriculum, Level, Lesson, InteractiveStep } from '../data/englishCurriculum';
 import { phraseBank, Phrase } from '../data/englishPhrases';
@@ -193,6 +193,24 @@ export default function EnglishPage() {
               <p className="text-white/80 font-medium mb-6 leading-relaxed">أكثر من 1000 جملة وموقف يومي مرتبة بدقة لمساعدتك على التحدث بطلاقة.</p>
               <div className="mt-auto flex items-center gap-2 text-white font-bold">
                 تصفح البنك الآن <ArrowRight size={20} />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+             whileHover={{ scale: 1.02, y: -4 }}
+             onClick={() => window.open('https://www.youtube.com/c/zAmericanEnglish', '_blank')}
+             className="relative rounded-[2.5rem] p-8 border-2 bg-gradient-to-br from-red-600 to-red-700 border-white/10 cursor-pointer overflow-hidden group shadow-xl"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/40 transition-all"></div>
+            <div className="flex flex-col h-full relative z-10 text-white">
+              <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-xl flex items-center justify-center mb-6 shadow-sm">
+                <Youtube size={40} />
+              </div>
+              <h3 className="text-2xl font-black mb-2">كورس ZAmericanEnglish 📺</h3>
+              <p className="text-white/80 font-medium mb-6 leading-relaxed">أفضل كورس لتعلم اللغة الإنجليزية من الصفر حتى الاحتراف للاستاذ ابراهيم عادل.</p>
+              <div className="mt-auto flex items-center gap-2 text-white font-bold">
+                مشاهدة الكورس <ExternalLink size={20} />
               </div>
             </div>
           </motion.div>
