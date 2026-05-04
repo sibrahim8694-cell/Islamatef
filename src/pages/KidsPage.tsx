@@ -132,6 +132,8 @@ export default function KidsPage() {
     const saved = localStorage.getItem('kids_badges');
     return saved ? JSON.parse(saved) : [];
   });
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     localStorage.setItem('kids_xp', points.toString());
@@ -181,9 +183,46 @@ export default function KidsPage() {
     { letter: 'ي', word: 'يد', symbol: '✋', color: 'bg-orange-50 text-orange-800' },
   ];
 
-  const speak = (text: string, lang: string = 'ar-SA', e?: React.MouseEvent) => {
+  const speak = async (text: string, lang: string = 'ar-SA', e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    playTTS(text, lang);
+    
+    // For very long texts (like stories), use native SpeechSynthesis
+    if (text.length > 150) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        window.speechSynthesis.speak(utterance);
+      }
+      return;
+    }
+    
+    if (audioRef.current) {
+      try {
+        const gTTSLang = lang.startsWith('en') ? 'en-US' : 'ar';
+        const cleanText = text.substring(0, 150);
+        const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${gTTSLang}&q=${encodeURIComponent(cleanText)}`;
+        
+        audioRef.current.pause();
+        audioRef.current.src = url;
+        audioRef.current.load();
+        
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Audio playback blocked, falling back to synthesis", err);
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.lang = lang;
+              window.speechSynthesis.speak(utterance);
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Audio error", err);
+      }
+    }
   };
 
   const arabicNumbers = [
@@ -703,6 +742,7 @@ export default function KidsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 pb-32 space-y-12">
+      <audio ref={audioRef} playsInline />
       <div className="fixed bottom-6 left-0 right-0 z-50 px-4 md:px-0">
         <div 
           className="max-w-4xl mx-auto bg-white/90 backdrop-blur-xl border-2 border-slate-100 rounded-full p-2 shadow-2xl flex items-center justify-between gap-1 overflow-x-auto no-scrollbar"

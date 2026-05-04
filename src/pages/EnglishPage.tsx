@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { playTTS } from '../lib/tts';
 import { motion, AnimatePresence } from 'motion/react';
 import { PlayCircle, CheckCircle2, ChevronRight, X, Volume2, Bot, Send, Award, ArrowRight, Check, Trophy, BookOpen, Zap, Headphones, MessageSquare, GraduationCap, Search, Mic, MicOff } from 'lucide-react';
@@ -19,6 +19,8 @@ export default function EnglishPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'kids' | 'students'>('all');
   const [progress, setProgress] = useState<Record<string, boolean>>({});
   const [phraseSearch, setPhraseSearch] = useState('');
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Chat state
   const [chatMessage, setChatMessage] = useState('');
@@ -335,6 +337,7 @@ export default function EnglishPage() {
 
   return (
     <div className="max-w-7xl mx-auto pb-24 h-full px-4">
+      <audio ref={audioRef} playsInline />
       {appState === 'levels' && renderLevels()}
       {appState === 'lessons' && renderLessons()}
       {appState === 'phrasebank' && renderPhraseBank()}
@@ -369,7 +372,43 @@ export default function EnglishPage() {
 
   function speak(text: string, e?: React.MouseEvent) {
     if (e) e.stopPropagation();
-    playTTS(text, 'en-US');
+    
+    // For very long texts, use native SpeechSynthesis
+    if (text.length > 150) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+      }
+      return;
+    }
+    
+    if (audioRef.current) {
+      try {
+        const cleanText = text.substring(0, 150);
+        const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=en-US&q=${encodeURIComponent(cleanText)}`;
+        
+        audioRef.current.pause();
+        audioRef.current.src = url;
+        audioRef.current.load();
+        
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Audio playback blocked, falling back to synthesis", err);
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.lang = 'en-US';
+              window.speechSynthesis.speak(utterance);
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Audio error", err);
+      }
+    }
   }
 
   async function handleChat(e?: React.FormEvent, manualMessage?: string) {
@@ -671,6 +710,7 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState<'idle'|'correct'|'wrong'>('idle');
   const [isListening, setIsListening] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const step = lesson.steps[currentStepIdx];
   const progressPercent = ((currentStepIdx) / lesson.steps.length) * 100;
@@ -738,7 +778,42 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
   };
 
   const speak = (text: string) => {
-    playTTS(text, 'en-US');
+    // For very long texts, use native SpeechSynthesis
+    if (text.length > 150) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+      }
+      return;
+    }
+    
+    if (audioRef.current) {
+      try {
+        const cleanText = text.substring(0, 150);
+        const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=en-US&q=${encodeURIComponent(cleanText)}`;
+        
+        audioRef.current.pause();
+        audioRef.current.src = url;
+        audioRef.current.load();
+        
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Audio playback blocked, falling back to synthesis", err);
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.lang = 'en-US';
+              window.speechSynthesis.speak(utterance);
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Audio error", err);
+      }
+    }
   };
 
   const handleNext = () => {
@@ -775,6 +850,7 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col animate-in slide-in-from-bottom-8 duration-300">
+      <audio ref={audioRef} playsInline />
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
         <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition">
