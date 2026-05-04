@@ -152,6 +152,31 @@ export default function EnglishPage() {
           </div>
         </div>
 
+        {/* Highlighted Banner for YouTube Course */}
+        <motion.div
+           whileHover={{ scale: 1.01, y: -2 }}
+           onClick={() => window.open('https://www.youtube.com/@zAmericanEnglish', '_blank')}
+           className="relative rounded-[2.5rem] p-8 md:p-10 border-2 bg-gradient-to-br from-red-600 to-red-700 border-white/10 cursor-pointer overflow-hidden group shadow-xl flex flex-col md:flex-row items-center justify-between gap-8 text-white"
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 group-hover:bg-white/30 transition-all"></div>
+          <div className="relative z-10 flex items-center gap-6">
+            <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-xl flex items-center justify-center shadow-lg shrink-0">
+              <Youtube size={48} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-3xl font-black mb-3">كورس ZAmericanEnglish على يوتيوب 📺</h3>
+              <p className="text-white/90 font-medium text-lg max-w-2xl leading-relaxed">
+                اشترك الآن في أشهر وأفضل قناة لتعلم اللغة الإنجليزية من الصفر حتى الاحتراف للاستاذ إبراهيم عادل. دروس مجانية يومية، وتطبيقات عملية متكاملة!
+              </p>
+            </div>
+          </div>
+          <div className="relative z-10 shrink-0">
+            <div className="bg-white text-red-600 px-8 py-4 rounded-full font-black text-lg flex items-center gap-3 hover:bg-red-50 transition shadow-lg group-hover:shadow-xl group-hover:scale-105">
+              زيارة القناة <ExternalLink size={24} />
+            </div>
+          </div>
+        </motion.div>
+
         {/* Tab Switcher */}
         <div className="flex justify-center flex-wrap">
           <div className="bg-white p-2 rounded-[2rem] border-2 border-slate-100 shadow-sm flex flex-wrap gap-2">
@@ -193,24 +218,6 @@ export default function EnglishPage() {
               <p className="text-white/80 font-medium mb-6 leading-relaxed">أكثر من 1000 جملة وموقف يومي مرتبة بدقة لمساعدتك على التحدث بطلاقة.</p>
               <div className="mt-auto flex items-center gap-2 text-white font-bold">
                 تصفح البنك الآن <ArrowRight size={20} />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-             whileHover={{ scale: 1.02, y: -4 }}
-             onClick={() => window.open('https://www.youtube.com/c/zAmericanEnglish', '_blank')}
-             className="relative rounded-[2.5rem] p-8 border-2 bg-gradient-to-br from-red-600 to-red-700 border-white/10 cursor-pointer overflow-hidden group shadow-xl"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/40 transition-all"></div>
-            <div className="flex flex-col h-full relative z-10 text-white">
-              <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-xl flex items-center justify-center mb-6 shadow-sm">
-                <Youtube size={40} />
-              </div>
-              <h3 className="text-2xl font-black mb-2">كورس ZAmericanEnglish 📺</h3>
-              <p className="text-white/80 font-medium mb-6 leading-relaxed">أفضل كورس لتعلم اللغة الإنجليزية من الصفر حتى الاحتراف للاستاذ ابراهيم عادل.</p>
-              <div className="mt-auto flex items-center gap-2 text-white font-bold">
-                مشاهدة الكورس <ExternalLink size={20} />
               </div>
             </div>
           </motion.div>
