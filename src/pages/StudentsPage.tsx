@@ -84,12 +84,9 @@ export default function StudentsPage() {
   };
 
   const resourceLinks = [
-    { title: "منصة التعليم الإلكتروني وزارة التربية والتعليم", url: "https://moe.gov.eg/ar/elearning/", desc: "الموقع الرسمي لتحميل الكتب المدرسية لجميع المراحل.", icon: <BookOpen className="text-indigo-600" /> },
     { title: "ملزمتي", url: "https://www.mlzamty.com", desc: "افضل المذكرات والمراجعات النهائية للتحميل المباشر.", icon: <Download className="text-amber-500" /> },
     { title: "مدرستي اون لاين", url: "https://www.madrsa-online.com/", desc: "منصة شاملة لتحميل المذكرات والملخصات لجميع الصفوف.", icon: <Library className="text-emerald-500" /> },
     { title: "موقع الامتحان التعليمي", url: "https://www.exam-eg.com/", desc: "مراجعات وملزمات وكتب خارجية لجميع المراحل.", icon: <Book className="text-sky-500" /> },
-    { title: "بوابة الثانوية العامة (وزارة التربية والتعليم)", url: "https://thanwya.emis.gov.eg/", desc: "الرابط الرسمي لمقررات الثانوية العامة.", icon: <Globe className="text-rose-500" /> },
-    { title: "موقع التفوق التعليمي", url: "https://app.altfawok.com/", desc: "تحميل كتب خارجية ومذكرات حصرية.", icon: <Download className="text-purple-500" /> },
   ];
 
   return (
