@@ -181,18 +181,23 @@ export default function KidsPage() {
   ];
 
   const speak = (text: string, lang: string = 'ar-SA') => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      
-      const voices = window.speechSynthesis.getVoices();
-      const arabicVoice = voices.find(v => v.lang.startsWith('ar'));
-      if (arabicVoice && lang.startsWith('ar')) {
-        utterance.voice = arabicVoice;
+    try {
+      const gTTSLang = lang.startsWith('en') ? 'en-US' : 'ar';
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${gTTSLang}&client=tw-ob&q=${encodeURIComponent(text)}`;
+      const audio = new Audio(url);
+      audio.play().catch(() => {
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = lang;
+          window.speechSynthesis.speak(utterance);
+        }
+      });
+    } catch {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        window.speechSynthesis.speak(utterance);
       }
-      
-      window.speechSynthesis.speak(utterance);
     }
   };
 
