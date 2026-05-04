@@ -183,17 +183,35 @@ export default function KidsPage() {
   const speak = (text: string, lang: string = 'ar-SA') => {
     try {
       const gTTSLang = lang.startsWith('en') ? 'en-US' : 'ar';
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${gTTSLang}&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = new Audio(url);
-      audio.play().catch(() => {
+      
+      // Use SpeechSynthesis natively for very long texts (like stories)
+      if (text.length > 150) {
         if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = lang;
           window.speechSynthesis.speak(utterance);
         }
-      });
+        return;
+      }
+
+      const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${gTTSLang}&q=${encodeURIComponent(text)}`;
+      const audio = new Audio(url);
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            window.speechSynthesis.speak(utterance);
+          }
+        });
+      }
     } catch {
       if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = lang;
         window.speechSynthesis.speak(utterance);
