@@ -5,7 +5,7 @@ import {
   Gamepad2, BookOpen, Calculator, Trophy, 
   Settings, Heart, Sparkles, LayoutPanelLeft,
   ArrowRight, CheckCircle2, Layout, User, X, 
-  PlayCircle
+  PlayCircle, Download
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -182,9 +182,16 @@ export default function KidsPage() {
 
   const speak = (text: string, lang: string = 'ar-SA') => {
     if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
-      // utterance.rate = 0.8;
+      
+      const voices = window.speechSynthesis.getVoices();
+      const arabicVoice = voices.find(v => v.lang.startsWith('ar'));
+      if (arabicVoice && lang.startsWith('ar')) {
+        utterance.voice = arabicVoice;
+      }
+      
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -560,6 +567,25 @@ export default function KidsPage() {
                 </div>
               </motion.div>
             ))}
+          </div>
+
+          <div className="mt-16 bg-white rounded-[3rem] p-8 md:p-12 border-4 border-emerald-100 shadow-xl text-right" dir="rtl">
+            <h2 className="text-3xl font-black text-emerald-600 mb-8 flex items-center gap-4">
+              <Download className="text-emerald-500" /> مصادر تحميل القصص والكتب (PDF)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { title: "مكتبة نور - قصص أطفال", url: "https://www.noor-book.com/%D9%83%D8%AA%D8%A8-%D9%82%D8%B5%D8%B5-%D8%A7%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84-pdf", color: "text-emerald-600" },
+                { title: "مؤسسة هنداوي - قصص أطفال", url: "https://www.hindawi.org/books/categories/children.stories/", color: "text-emerald-600" },
+                { title: "أطفال الخليج ذوي الاحتياجات", url: "https://ar.gulfkids.com/", color: "text-emerald-600" },
+                { title: "مكتبة كتب pdf - قصص اطفال", url: "https://www.kutub-pdf.net/category/46.html", color: "text-emerald-600" }
+              ].map((link, i) => (
+                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-emerald-50 rounded-2xl border-2 border-emerald-100 hover:border-emerald-300 transition group">
+                  <span className={`font-bold text-lg ${link.color}`}>{link.title}</span>
+                  <ArrowRight className="text-emerald-400 group-hover:-translate-x-2 transition-transform" />
+                </a>
+              ))}
+            </div>
           </div>
         </>
       ) : (
