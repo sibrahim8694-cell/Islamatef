@@ -201,7 +201,7 @@ export default function KidsPage() {
       try {
         const gTTSLang = lang.startsWith('en') ? 'en-US' : 'ar';
         const cleanText = text.substring(0, 150);
-        const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${gTTSLang}&q=${encodeURIComponent(cleanText)}`;
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${gTTSLang}&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
         
         audioRef.current.pause();
         audioRef.current.src = url;

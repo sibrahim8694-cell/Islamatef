@@ -387,7 +387,7 @@ export default function EnglishPage() {
     if (audioRef.current) {
       try {
         const cleanText = text.substring(0, 150);
-        const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=en-US&q=${encodeURIComponent(cleanText)}`;
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en-US&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
         
         audioRef.current.pause();
         audioRef.current.src = url;
@@ -792,7 +792,7 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
     if (audioRef.current) {
       try {
         const cleanText = text.substring(0, 150);
-        const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=en-US&q=${encodeURIComponent(cleanText)}`;
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en-US&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
         
         audioRef.current.pause();
         audioRef.current.src = url;
