@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { BookOpen, BookText, GraduationCap, Baby, Home, Search, Heart } from 'lucide-react';
+import { BookOpen, BookText, GraduationCap, Baby, Home, Search, Heart, Smartphone } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import QuranPage from './pages/QuranPage';
 import EnglishPage from './pages/EnglishPage';
@@ -18,12 +18,29 @@ function NavLinks() {
     { path: '/azkar', label: 'الأذكار', icon: <Search size={20} /> },
     { path: '/english', label: 'تعلم الإنجليزية', icon: <BookText size={20} /> },
     { path: '/students', label: 'قسم الطلاب', icon: <GraduationCap size={20} /> },
-    { path: '/kids', label: 'ركن الأطفال', icon: <Baby size={20} /> }
+    { path: '/kids', label: 'ركن الأطفال', icon: <Baby size={20} /> },
+    { path: 'https://median.co/share/mbeybbz#apk', label: 'حمل التطبيق', icon: <Smartphone size={20} />, isExternal: true }
   ];
 
   return (
     <nav className="flex-1 px-4 space-y-1 mt-4">
       {links.map((link) => {
+        if (link.isExternal) {
+          return (
+            <a
+              key={link.label}
+              href={link.path}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center space-x-reverse space-x-3 px-4 py-3 rounded-lg transition-colors text-emerald-600 hover:bg-emerald-50"
+            >
+              <div className="w-6 flex justify-center ml-1">
+                {link.icon}
+              </div>
+              <span className="font-medium mr-3">{link.label}</span>
+            </a>
+          );
+        }
         const isActive = location.pathname === link.path;
         return (
           <Link
@@ -55,12 +72,27 @@ function NavLinksMobile() {
     { path: '/azkar', label: 'الأذكار', icon: <Search size={20} /> },
     { path: '/english', label: 'إنجليزي', icon: <BookText size={20} /> },
     { path: '/students', label: 'للطلاب', icon: <GraduationCap size={20} /> },
-    { path: '/kids', label: 'للأطفال', icon: <Baby size={20} /> }
+    { path: '/kids', label: 'للأطفال', icon: <Baby size={20} /> },
+    { path: 'https://median.co/share/mbeybbz#apk', label: 'التطبيق', icon: <Smartphone size={20} />, isExternal: true }
   ];
 
   return (
     <>
       {links.map((link) => {
+        if (link.isExternal) {
+          return (
+            <a
+              key={link.label}
+              href={link.path}
+              target="_blank"
+              rel="noreferrer"
+              className="flex flex-col items-center p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors flex-1"
+            >
+              {link.icon}
+              <span className="text-[10px] mt-1 font-bold">{link.label}</span>
+            </a>
+          );
+        }
         const isActive = location.pathname === link.path;
         return (
           <Link

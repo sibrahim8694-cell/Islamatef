@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { 
   BookOpen, BookText, GraduationCap, Baby, 
   ArrowLeft, Heart, SunMedium, Sparkles, 
-  ChevronLeft, Play, Users, BookMarked, Globe
+  ChevronLeft, Play, Users, BookMarked, Globe,
+  Download, Smartphone
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -136,6 +137,14 @@ export default function HomePage() {
             >
                قسم الطلاب
             </Link>
+            <a 
+              href="https://median.co/share/mbeybbz#apk"
+              target="_blank"
+              rel="noreferrer"
+              className="bg-emerald-500 text-white px-10 py-5 rounded-3xl font-black text-lg hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-3"
+            >
+               <Smartphone size={24} /> حمل التطبيق
+            </a>
           </motion.div>
         </div>
       </section>
