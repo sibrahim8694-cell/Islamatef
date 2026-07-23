@@ -6,7 +6,7 @@ export const SURAHS = [
     "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية", "الأحقاف", "محمد", "الفتح", "الحجرات", "ق",
     "الذاريات", "الطور", "النجم", "القمر", "الرحمن", "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة",
     "الصف", "الجمعة", "المنافقون", "التغابن", "الطلاق", "التحريم", "الملك", "القلم", "الحاقة", "المعارج",
-    "نوح", "الجن", "المزمل", " المدثر", "القيامة", "الإنسان", "المرسلات", "النبأ", "النازعات", "عبس",
+    "نوح", "الجن", "المزمل", "المدثر", "القيامة", "الإنسان", "المرسلات", "النبأ", "النازعات", "عبس",
     "التكوير", "الإنفطار", "المطففين", "الانشقاق", "البروج", "الطارق", "الأعلى", "الغاشية", "الفجر", "البلد",
     "الشمس", "الليل", "الضحى", "الشرح", "التين", "العلق", "القدر", "البينة", "الزلزلة", "العاديات",
     "القارعة", "التكاثر", "العصر", "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر",
@@ -17,6 +17,7 @@ export interface Reciter {
   id: number;
   name: string;
   server?: string;
+  fallbackServer?: string;
   buildUrl?: (surahIndex: number) => string;
   availableSurahs?: number[]; // indices 0-113
 }
@@ -27,6 +28,8 @@ export const RECITERS: Reciter[] = [
   { id: 2, name: 'عبدالباسط عبدالصمد (مجود)', server: 'https://server7.mp3quran.net/basit/Almusshaf-Al-Mojawwad' },
   { id: 3, name: 'محمد صديق المنشاوي (مجود)', server: 'https://server10.mp3quran.net/minsh/Almusshaf-Al-Mojawwad' },
   { id: 4, name: 'مصطفى إسماعيل (مجود)', server: 'https://server8.mp3quran.net/mustafa/Almusshaf-Al-Mojawwad' },
+  { id: 24, name: 'محمد رفعت (كامل مجود)', server: 'https://server14.mp3quran.net/rifat', fallbackServer: 'https://server14.mp3quran.net/mohamed_refaat' },
+  { id: 25, name: 'شعبان الصياد', server: 'https://server11.mp3quran.net/shaban', fallbackServer: 'https://server11.mp3quran.net/shaban_elsayad' },
   { id: 5, name: 'محمد جبريل', server: 'https://server8.mp3quran.net/jbrl' },
   { id: 51, name: 'محمود خليل الحصري (مرتل)', server: 'https://server13.mp3quran.net/husr' },
   { id: 52, name: 'عبدالباسط عبدالصمد (مرتل)', server: 'https://server7.mp3quran.net/basit' },
