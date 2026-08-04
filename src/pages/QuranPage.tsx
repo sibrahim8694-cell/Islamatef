@@ -289,8 +289,9 @@ export default function QuranPage() {
           <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-500">
             <span className="font-bold text-slate-700">القراء المميزون:</span>
             {[
+              { id: 26, name: 'الطنطاوي (مجود)' },
               { id: 24, name: 'محمد رفعت (مجود)' },
-              { id: 25, name: 'شعبان الصياد' },
+              { id: 25, name: 'شعبان الصياد (مجود)' },
               { id: 1, name: 'الحصري (مجود)' },
               { id: 2, name: 'عبد الباسط (مجود)' },
               { id: 3, name: 'المنشاوي (مجود)' },
