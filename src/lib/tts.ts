@@ -63,13 +63,13 @@ export function playTTS(text: string, lang: string = 'en-US') {
       const playPromise = audioEl.play();
       if (playPromise !== undefined) {
         playPromise.catch((err) => {
-          console.warn("Audio fallback to SpeechSynthesis:", err);
+          console.warn("Audio fallback to SpeechSynthesis:", err?.message || String(err));
           nativeSpeak(text, lang);
         });
       }
     }, 50);
-  } catch (err) {
-    console.error("TTS error:", err);
+  } catch (err: any) {
+    console.warn("TTS notice:", err?.message || String(err));
     nativeSpeak(text, lang);
   }
 }

@@ -60,13 +60,15 @@ export default function QuranPage() {
   };
 
   const handleAudioError = async (e: any) => {
-    console.error("Audio playback error:", e);
+    // Avoid circular JSON error when logging event objects
+    const errorMsg = e?.target?.error?.message || e?.message || "Audio playback error";
+    console.warn("Audio playback notice:", errorMsg);
 
     if (playingSurah !== null && !hasTriedFallback && selectedReciter.fallbackServer) {
       setHasTriedFallback(true);
-      const fallbackUrl = `${selectedReciter.fallbackServer}/${getSurahNumber(playingSurah)}.mp3`;
+      const fallbackUrl = getSurahAudioUrl(selectedReciter, playingSurah, true);
       console.log("Attempting fallback URL:", fallbackUrl);
-      if (audioRef.current) {
+      if (audioRef.current && fallbackUrl) {
         audioRef.current.src = fallbackUrl;
         audioRef.current.load();
         try {
@@ -74,8 +76,8 @@ export default function QuranPage() {
           setIsPlaying(true);
           setIsLoading(false);
           return;
-        } catch (retryErr) {
-          console.error("Fallback audio load failed:", retryErr);
+        } catch (retryErr: any) {
+          console.warn("Fallback audio load notice:", retryErr?.message || String(retryErr));
         }
       }
     }
@@ -83,9 +85,11 @@ export default function QuranPage() {
     setIsPlaying(false);
     setIsLoading(false);
     
-    toast.error("تعذر تشغيل هذه السورة حالياً", {
-      description: "يرجى اختيار قارئ آخر أو محاولة التشغيل لاحقاً"
-    });
+    if (playingSurah !== null && !isPlaying) {
+      toast.error("تعذر تشغيل هذه السورة حالياً", {
+        description: "يرجى اختيار قارئ آخر أو محاولة التشغيل لاحقاً"
+      });
+    }
   };
 
   const getSurahAudioUrl = (reciter: Reciter, index: number, useFallback = false) => {
@@ -117,26 +121,43 @@ export default function QuranPage() {
       setPlayingSurah(index);
       setHasTriedFallback(false);
       
-      const url = getSurahAudioUrl(selectedReciter, index);
+      const primaryUrl = getSurahAudioUrl(selectedReciter, index, false);
       
-      if (!url) {
+      if (!primaryUrl) {
         setIsLoading(false);
         toast.error("عذراً، هذه السورة غير متوفرة لهذا القارئ.");
         return;
       }
 
-      audioRef.current.src = url;
+      audioRef.current.src = primaryUrl;
       audioRef.current.load();
       
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        await playPromise;
+      try {
+        await audioRef.current.play();
         setIsPlaying(true);
         setIsLoading(false);
+      } catch (playErr: any) {
+        // If primary URL failed, try fallback immediately if available
+        if (selectedReciter.fallbackServer && !hasTriedFallback) {
+          setHasTriedFallback(true);
+          const fallbackUrl = getSurahAudioUrl(selectedReciter, index, true);
+          if (fallbackUrl && audioRef.current) {
+            console.log("Attempting fallback URL:", fallbackUrl);
+            audioRef.current.src = fallbackUrl;
+            audioRef.current.load();
+            await audioRef.current.play();
+            setIsPlaying(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+        throw playErr;
       }
     } catch (err: any) {
-      if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
-        console.error("Play surah error:", err);
+      const errName = err?.name || '';
+      const errMsg = err?.message || String(err);
+      if (errName !== 'AbortError' && errName !== 'NotAllowedError') {
+        console.warn("Play surah notice:", errMsg);
       }
       setIsLoading(false);
       setIsPlaying(false);
@@ -176,8 +197,8 @@ export default function QuranPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn("Download fallback notice:", err?.message || String(err));
       window.open(url, '_blank');
     } finally {
       setDownloadingSurah(null);
@@ -224,9 +245,20 @@ export default function QuranPage() {
         
         <div className="relative z-10 w-full flex-1 space-y-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 mb-1">اختر القارئ المفضل لديك</h1>
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h1 className="text-2xl font-bold text-slate-800">اختر القارئ المفضل لديك</h1>
+              {selectedReciter.availableSurahs ? (
+                <span className="px-3 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold">
+                  التسجيلات المتاحة: {selectedReciter.availableSurahs.length} سورة من النوادر
+                </span>
+              ) : (
+                <span className="px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold">
+                  مصحف كامل 114 سورة (بدقة عالية)
+                </span>
+              )}
+            </div>
             <p className="text-slate-500 text-sm">
-              تمت إضافة الشيخ محمد رفعت (كامل مجود) والشيخ شعبان الصياد وكوكبة من أئمة القراء.
+              مصحف إلكتروني شامل بدقة عالية - الشيخ محمد عبدالوهاب الطنطاوي، الشيخ شعبان الصياد، الشيخ محمد رفعت، وجميع كبار القراء.
             </p>
           </div>
 

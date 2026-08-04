@@ -455,8 +455,8 @@ export default function EnglishPage() {
       const botText = response.text || "Sorry, I couldn't generate a response.";
       setChatHistory(prev => [...prev, { role: 'bot', text: botText }]);
       speak(botText);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.warn("Chat error:", error?.message || String(error));
       setChatHistory(prev => [...prev, { role: 'bot', text: "Sorry, I'm having trouble connecting right now." }]);
     }
   }

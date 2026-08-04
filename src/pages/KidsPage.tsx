@@ -219,8 +219,8 @@ export default function KidsPage() {
             }
           });
         }
-      } catch (err) {
-        console.error("Audio error", err);
+      } catch (err: any) {
+        console.warn("Audio notice:", err?.message || String(err));
       }
     }
   };
