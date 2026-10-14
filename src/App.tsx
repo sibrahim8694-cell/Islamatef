@@ -51,15 +51,15 @@ function DesktopSidebar() {
               to={link.path}
               className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all duration-200 ${
                 isActive
-                  ? 'bg-emerald-50 text-emerald-800 font-bold shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
+                  ? 'bg-rose-50 text-[#800020] font-black shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-[#800020] font-medium'
               }`}
             >
-              <div className={`${isActive ? 'text-emerald-700' : 'text-slate-400'}`}>
+              <div className={`${isActive ? 'text-[#800020]' : 'text-slate-400 group-hover:text-[#800020]'}`}>
                 {link.icon}
               </div>
               <span className="text-sm">{link.label}</span>
-              {isActive && <div className="mr-auto w-1.5 h-4 rounded-full bg-emerald-600" />}
+              {isActive && <div className="mr-auto w-1.5 h-4 rounded-full bg-[#800020]" />}
             </Link>
           );
         })}
@@ -69,12 +69,12 @@ function DesktopSidebar() {
           href={APK_DOWNLOAD_URL}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold transition-all border border-emerald-500/20"
+          className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-[#800020] bg-rose-50 hover:bg-rose-100/70 font-bold transition-all border border-rose-200/60"
         >
-          <Smartphone size={20} className="text-emerald-600 shrink-0" />
+          <Smartphone size={20} className="text-[#800020] shrink-0" />
           <div className="flex flex-col text-right">
             <span className="text-sm">حمل تطبيق أندرويد</span>
-            <span className="text-[10px] text-emerald-700/80">ملف APK مجاني ومباشر</span>
+            <span className="text-[10px] text-[#800020]/80">ملف APK مجاني ومباشر</span>
           </div>
         </a>
       </nav>
@@ -156,7 +156,7 @@ function MobileHeader({ onOpenMore }: { onOpenMore: () => void }) {
         <button
           onClick={handleShare}
           aria-label="مشاركة التطبيق"
-          className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center active:bg-emerald-100 transition"
+          className="w-8 h-8 rounded-full bg-rose-50 text-[#800020] flex items-center justify-center active:bg-rose-100 transition"
           title="مشاركة الأجر"
         >
           <Share2 size={16} />
@@ -165,7 +165,7 @@ function MobileHeader({ onOpenMore }: { onOpenMore: () => void }) {
           href={APK_DOWNLOAD_URL}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold active:bg-emerald-700 shadow-xs"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#800020] text-white text-xs font-bold active:bg-[#5a0016] shadow-xs"
         >
           <Smartphone size={13} />
           <span>تطبيق</span>
@@ -175,27 +175,29 @@ function MobileHeader({ onOpenMore }: { onOpenMore: () => void }) {
   );
 }
 
-function MobileBottomNav({ onOpenEducation, onOpenMore }: { onOpenEducation: () => void; onOpenMore: () => void }) {
+function MobileBottomNav({ onOpenEducation, onOpenMore }: { onOpenEducation: () => void; onOpenMore?: () => void }) {
   const location = useLocation();
   const isEducationActive = ['/english', '/students', '/kids'].includes(location.pathname);
 
   return (
     <nav 
       aria-label="شريط التنقل السفلي للتطبيق"
-      className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/90 z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+      className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-rose-100/80 z-40 pb-safe shadow-[0_-4px_20px_rgba(128,0,32,0.06)]"
     >
       <div className="grid grid-cols-5 items-center h-14 max-w-md mx-auto px-1">
         {/* Tab 1: Home */}
         <Link
           to="/"
           className={`flex flex-col items-center justify-center h-full min-h-[44px] rounded-lg transition-colors touch-press ${
-            location.pathname === '/' ? 'text-emerald-700 font-bold' : 'text-slate-500 hover:text-slate-800'
+            location.pathname === '/' 
+              ? 'text-[#800020] font-black' 
+              : 'text-[#800020]/60 hover:text-[#800020]'
           }`}
         >
-          <div className="relative">
-            <Home size={20} strokeWidth={location.pathname === '/' ? 2.5 : 1.8} />
+          <div className="relative flex items-center justify-center">
+            <Home size={20} strokeWidth={location.pathname === '/' ? 2.4 : 1.8} />
             {location.pathname === '/' && (
-              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#800020] rounded-full" />
             )}
           </div>
           <span className="text-[11px] mt-1">الرئيسية</span>
@@ -205,13 +207,15 @@ function MobileBottomNav({ onOpenEducation, onOpenMore }: { onOpenEducation: () 
         <Link
           to="/quran"
           className={`flex flex-col items-center justify-center h-full min-h-[44px] rounded-lg transition-colors touch-press ${
-            location.pathname === '/quran' ? 'text-emerald-700 font-bold' : 'text-slate-500 hover:text-slate-800'
+            location.pathname === '/quran' 
+              ? 'text-[#800020] font-black' 
+              : 'text-[#800020]/60 hover:text-[#800020]'
           }`}
         >
-          <div className="relative">
-            <BookOpen size={20} strokeWidth={location.pathname === '/quran' ? 2.5 : 1.8} />
+          <div className="relative flex items-center justify-center">
+            <BookOpen size={20} strokeWidth={location.pathname === '/quran' ? 2.4 : 1.8} />
             {location.pathname === '/quran' && (
-              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#800020] rounded-full" />
             )}
           </div>
           <span className="text-[11px] mt-1">القرآن</span>
@@ -221,13 +225,15 @@ function MobileBottomNav({ onOpenEducation, onOpenMore }: { onOpenEducation: () 
         <Link
           to="/azkar"
           className={`flex flex-col items-center justify-center h-full min-h-[44px] rounded-lg transition-colors touch-press ${
-            location.pathname === '/azkar' ? 'text-emerald-700 font-bold' : 'text-slate-500 hover:text-slate-800'
+            location.pathname === '/azkar' 
+              ? 'text-[#800020] font-black' 
+              : 'text-[#800020]/60 hover:text-[#800020]'
           }`}
         >
-          <div className="relative">
-            <SunMedium size={20} strokeWidth={location.pathname === '/azkar' ? 2.5 : 1.8} />
+          <div className="relative flex items-center justify-center">
+            <SunMedium size={20} strokeWidth={location.pathname === '/azkar' ? 2.4 : 1.8} />
             {location.pathname === '/azkar' && (
-              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#800020] rounded-full" />
             )}
           </div>
           <span className="text-[11px] mt-1">الأذكار</span>
@@ -237,26 +243,36 @@ function MobileBottomNav({ onOpenEducation, onOpenMore }: { onOpenEducation: () 
         <button
           onClick={onOpenEducation}
           className={`flex flex-col items-center justify-center h-full min-h-[44px] rounded-lg transition-colors touch-press ${
-            isEducationActive ? 'text-emerald-700 font-bold' : 'text-slate-500 hover:text-slate-800'
+            isEducationActive 
+              ? 'text-[#800020] font-black' 
+              : 'text-[#800020]/60 hover:text-[#800020]'
           }`}
         >
-          <div className="relative">
-            <GraduationCap size={20} strokeWidth={isEducationActive ? 2.5 : 1.8} />
+          <div className="relative flex items-center justify-center">
+            <GraduationCap size={20} strokeWidth={isEducationActive ? 2.4 : 1.8} />
             {isEducationActive && (
-              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-emerald-600 rounded-full" />
+              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#800020] rounded-full" />
             )}
           </div>
           <span className="text-[11px] mt-1">التعليم</span>
         </button>
 
-        {/* Tab 5: More */}
-        <button
-          onClick={onOpenMore}
-          className="flex flex-col items-center justify-center h-full min-h-[44px] rounded-lg text-slate-500 hover:text-slate-800 transition-colors touch-press"
+        {/* Tab 5: Download App - Matched with other tabs in size and stroke */}
+        <a
+          href={APK_DOWNLOAD_URL}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => {
+            toast.success('جاري فتح رابط تحميل تطبيق الأندرويد (APK)...');
+          }}
+          className="flex flex-col items-center justify-center h-full min-h-[44px] rounded-lg text-[#800020]/75 hover:text-[#800020] active:text-[#800020] transition-colors touch-press"
+          aria-label="تحميل تطبيق أندرويد"
         >
-          <MoreHorizontal size={20} strokeWidth={1.8} />
-          <span className="text-[11px] mt-1">المزيد</span>
-        </button>
+          <div className="relative flex items-center justify-center">
+            <Smartphone size={20} strokeWidth={1.8} />
+          </div>
+          <span className="text-[10px] sm:text-[11px] mt-1 font-bold whitespace-nowrap">تحميل التطبيق</span>
+        </a>
       </div>
     </nav>
   );
