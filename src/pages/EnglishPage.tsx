@@ -127,146 +127,165 @@ export default function EnglishPage() {
     );
 
     return (
-      <div className="space-y-12 animate-in fade-in zoom-in duration-500">
-        {/* Hero with stats summary */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-12 relative overflow-hidden shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8">
+      <div className="space-y-6 sm:space-y-8 animate-in fade-in zoom-in duration-500">
+        {/* Top Card 1: Hero with stats summary - Compact & Mobile Optimized */}
+        <div className="bg-slate-900 rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] p-4 sm:p-7 md:p-8 relative overflow-hidden shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=2573&auto=format&fit=crop')] bg-cover bg-center opacity-20"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/40 to-transparent"></div>
-          <div className="relative z-10 max-w-2xl text-white text-right md:text-right">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-indigo-300 font-medium text-sm mb-6 backdrop-blur">
-              <Bot size={16} /> تعليم ذكي متطور
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/60 to-transparent"></div>
+          
+          <div className="relative z-10 w-full md:max-w-xl text-right">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-300 font-bold text-xs mb-2.5 backdrop-blur">
+              <Bot size={14} /> <span>تعليم ذكي متطور</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-black mb-6 leading-tight">مرحباً بك في <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">أكاديمية اللغة</span></h1>
-            <p className="text-slate-300 text-xl font-medium leading-relaxed">المسار التعليمي الشامل لكل الأعمار والمستويات.</p>
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-black mb-2 text-white leading-snug">
+              مرحباً بك في <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">أكاديمية اللغة</span>
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm md:text-base font-medium leading-relaxed">
+              المسار التعليمي الشامل لكل الأعمار والمستويات من الصفر وحتى الطلاقة.
+            </p>
           </div>
           
-          <div className="relative z-10 flex gap-4">
+          <div className="relative z-10 w-full md:w-auto flex md:flex-col justify-end shrink-0">
             <button 
               onClick={() => setAppState('dashboard')}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-[2rem] text-center hover:bg-white/20 transition group"
+              className="w-full md:w-auto bg-white/10 backdrop-blur-xl border border-white/20 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center hover:bg-white/20 transition group flex md:flex-col items-center justify-between md:justify-center gap-2.5"
             >
-              <div className="text-indigo-400 font-black text-3xl mb-1">{Object.keys(progress).length}</div>
-              <div className="text-white/60 text-xs font-bold uppercase tracking-widest">إنجاز</div>
-              <Award className="mx-auto mt-2 text-indigo-400 group-hover:scale-125 transition" size={20} />
+              <div className="text-right md:text-center">
+                <div className="text-indigo-400 font-black text-xl sm:text-2xl leading-none mb-1">{Object.keys(progress).length}</div>
+                <div className="text-white/70 text-[10px] sm:text-xs font-bold uppercase tracking-wider">إنجاز دراسي</div>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-300 group-hover:scale-110 transition">
+                <Award size={18} />
+              </div>
             </button>
           </div>
         </div>
 
-        {/* Highlighted Banner for YouTube Course */}
+        {/* Top Card 2: Highlighted Banner for YouTube Course - Compact & Mobile Optimized */}
         <motion.div
            whileHover={{ scale: 1.01, y: -2 }}
            onClick={() => window.open('https://www.youtube.com/@zAmericanEnglish', '_blank')}
-           className="relative rounded-[2.5rem] p-8 md:p-10 border-2 bg-gradient-to-br from-red-600 to-red-700 border-white/10 cursor-pointer overflow-hidden group shadow-xl flex flex-col md:flex-row items-center justify-between gap-8 text-white"
+           className="relative rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] p-4 sm:p-6 md:p-7 border-2 bg-gradient-to-br from-red-600 to-red-700 border-white/10 cursor-pointer overflow-hidden group shadow-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 sm:gap-6 text-white"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 group-hover:bg-white/30 transition-all"></div>
-          <div className="relative z-10 flex items-center gap-6">
-            <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-xl flex items-center justify-center shadow-lg shrink-0">
-              <Youtube size={48} className="text-white" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 group-hover:bg-white/20 transition-all pointer-events-none"></div>
+          
+          <div className="relative z-10 flex items-start sm:items-center gap-3 sm:gap-5 flex-1 min-w-0">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center shadow-md shrink-0">
+              <Youtube className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
-            <div>
-              <h3 className="text-3xl font-black mb-3">كورس ZAmericanEnglish على يوتيوب 📺</h3>
-              <p className="text-white/90 font-medium text-lg max-w-2xl leading-relaxed">
-                اشترك الآن في أشهر وأفضل قناة لتعلم اللغة الإنجليزية من الصفر حتى الاحتراف للاستاذ إبراهيم عادل. دروس مجانية يومية، وتطبيقات عملية متكاملة!
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base sm:text-xl md:text-2xl font-black mb-1 sm:mb-1.5 leading-snug">
+                كورس ZAmericanEnglish على يوتيوب 📺
+              </h3>
+              <p className="text-white/90 font-medium text-xs sm:text-sm leading-relaxed line-clamp-2 sm:line-clamp-none">
+                أشهر وأفضل قناة لتعلم اللغة الإنجليزية من الصفر حتى الاحتراف للأستاذ إبراهيم عادل. دروس وتطبيقات عملية متكاملة!
               </p>
             </div>
           </div>
+
           <div className="relative z-10 shrink-0">
-            <div className="bg-white text-red-600 px-8 py-4 rounded-full font-black text-lg flex items-center gap-3 hover:bg-red-50 transition shadow-lg group-hover:shadow-xl group-hover:scale-105">
-              زيارة القناة <ExternalLink size={24} />
+            <div className="bg-white text-red-600 px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl sm:rounded-full font-black text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-red-50 transition shadow-md group-hover:shadow-lg group-hover:scale-105">
+              <span>زيارة القناة</span>
+              <ExternalLink size={16} />
             </div>
           </div>
         </motion.div>
 
-        {/* Tab Switcher */}
-        <div className="flex justify-center flex-wrap">
-          <div className="bg-white p-2 rounded-[2rem] border-2 border-slate-100 shadow-sm flex flex-wrap gap-2">
+        {/* Tab Switcher - Sleek & Mobile Friendly */}
+        <div className="flex justify-center">
+          <div className="bg-white p-1 sm:p-1.5 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap justify-center gap-1 sm:gap-1.5 w-full max-w-lg">
             {[
-              { id: 'all', label: 'الكل', icon: <Zap size={18} /> },
-              { id: 'kids', label: 'الأطفال 👶', icon: <Trophy size={18} /> },
-              { id: 'students', label: 'الطلاب 🎓', icon: <BookOpen size={18} /> },
-              { id: 'professional', label: 'إنجليزي أعمال 💼', icon: <GraduationCap size={18} /> }
+              { id: 'all', label: 'الكل', icon: <Zap size={15} /> },
+              { id: 'kids', label: 'الأطفال 👶', icon: <Trophy size={15} /> },
+              { id: 'students', label: 'الطلاب 🎓', icon: <BookOpen size={15} /> },
+              { id: 'professional', label: 'إنجليزي أعمال 💼', icon: <GraduationCap size={15} /> }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black transition-all text-sm md:text-base ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-bold transition-all text-xs sm:text-sm ${
                   activeTab === tab.id 
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
-                  : 'text-slate-500 hover:bg-slate-50'
+                  ? 'bg-indigo-600 text-white shadow-sm' 
+                  : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 {tab.icon}
-                {tab.label}
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Levels & Core Tools in 2-by-2 Paired Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2.5 sm:gap-4 md:gap-6">
           {/* Direct Phrase Bank Access Button */}
           <motion.div
-             whileHover={{ scale: 1.02, y: -4 }}
+             whileHover={{ scale: 1.02, y: -3 }}
              onClick={() => setAppState('phrasebank')}
-             className="relative rounded-[2.5rem] p-8 border-2 bg-gradient-to-br from-rose-500 to-pink-600 border-white/10 cursor-pointer overflow-hidden group shadow-xl"
+             className="relative rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-6 border-2 bg-gradient-to-br from-rose-500 to-pink-600 border-white/10 cursor-pointer overflow-hidden group shadow-sm hover:shadow-md flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/40 transition-all"></div>
+            <div className="absolute top-0 right-0 w-28 h-28 bg-white/20 rounded-full blur-2xl -mr-14 -mt-14 group-hover:bg-white/30 transition-all pointer-events-none"></div>
             <div className="flex flex-col h-full relative z-10 text-white">
-              <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-xl flex items-center justify-center mb-6 shadow-sm">
-                <MessageSquare size={40} />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white/20 backdrop-blur-xl flex items-center justify-center mb-2.5 sm:mb-4 shadow-xs">
+                <MessageSquare className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="text-2xl font-black mb-2">بنك العبارات والطلاقة 🌍</h3>
-              <p className="text-white/80 font-medium mb-6 leading-relaxed">أكثر من 1000 جملة وموقف يومي مرتبة بدقة لمساعدتك على التحدث بطلاقة.</p>
-              <div className="mt-auto flex items-center gap-2 text-white font-bold">
-                تصفح البنك الآن <ArrowRight size={20} />
+              <h3 className="text-xs sm:text-base md:text-lg font-black mb-1 leading-snug">بنك العبارات والطلاقة 🌍</h3>
+              <p className="text-white/80 text-[10px] sm:text-xs font-medium mb-3 sm:mb-4 leading-relaxed line-clamp-2">
+                أكثر من 1000 جملة وموقف يومي مرتبة لمساعدتك على التحدث بطلاقة.
+              </p>
+              <div className="mt-auto flex items-center gap-1 text-white font-bold text-[10px] sm:text-xs">
+                <span>تصفح البنك الآن</span>
+                <ArrowRight size={14} />
               </div>
             </div>
           </motion.div>
 
-          {filteredCurriculum.filter(l => l.category !== 'general').map((level, i) => {
+          {filteredCurriculum.filter(l => l.category !== 'general').map((level) => {
             const stats = getLevelProgress(level);
-            // Check unlocking based on index in ORIGINAL curriculum or just leave simplified for now
-            const isUnlocked = true; // Simplified for demo/expansion
+            const isUnlocked = true;
 
             return (
               <motion.div
                 key={level.id}
-                whileHover={isUnlocked ? { scale: 1.02, y: -4 } : {}}
+                whileHover={isUnlocked ? { scale: 1.02, y: -3 } : {}}
                 onClick={() => {
                   if (isUnlocked) {
                     setSelectedLevel(level);
                     setAppState('lessons');
                   }
                 }}
-                className={`relative rounded-[2.5rem] p-8 border-2 transition-all ${
+                className={`relative rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-6 border-2 transition-all flex flex-col justify-between ${
                   isUnlocked 
-                  ? 'bg-white border-slate-100 cursor-pointer hover:shadow-2xl hover:border-indigo-200' 
+                  ? 'bg-white border-slate-200/90 cursor-pointer hover:shadow-md hover:border-[#800020]/40' 
                   : 'bg-slate-50 border-slate-100 opacity-60 grayscale cursor-not-allowed'
                 }`}
               >
                 <div className="flex flex-col h-full">
-                  <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${level.color} flex items-center justify-center mb-6 shadow-xl`}>
+                  <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center mb-2.5 sm:mb-4 shadow-sm text-white`}>
                     {level.icon}
                   </div>
                   
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-2xl font-black text-slate-800">{level.title}</h3>
-                      {stats.percentage === 100 && (
-                        <span className="bg-yellow-100 text-yellow-700 p-2 rounded-full shadow-sm"><Trophy size={20} /></span>
-                      )}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1 gap-1">
+                        <h3 className="text-xs sm:text-base md:text-lg font-black text-slate-800 truncate">{level.title}</h3>
+                        {stats.percentage === 100 && (
+                          <span className="bg-yellow-100 text-yellow-700 p-0.5 sm:p-1 rounded-full shadow-xs shrink-0"><Trophy size={13} /></span>
+                        )}
+                      </div>
+                      <p className="text-slate-500 font-medium mb-2.5 sm:mb-4 text-[10px] sm:text-xs leading-relaxed line-clamp-2">{level.description}</p>
                     </div>
-                    <p className="text-slate-500 font-medium mb-6 leading-relaxed">{level.description}</p>
                     
-                    <div className="space-y-3">
-                      <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="space-y-1.5 mt-auto">
+                      <div className="h-1.5 sm:h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div 
                           className={`h-full bg-gradient-to-r ${level.color} rounded-full transition-all duration-1000 ease-out`}
                           style={{ width: `${stats.percentage}%` }}
                         ></div>
                       </div>
-                      <div className="flex justify-between text-sm font-bold">
+                      <div className="flex justify-between text-[9px] sm:text-[11px] font-bold">
                         <span className="text-slate-400">{stats.completed} / {stats.total} دروس</span>
-                        <span className="text-indigo-600">{Math.round(stats.percentage)}% مكتمل</span>
+                        <span className="text-indigo-600">{Math.round(stats.percentage)}%</span>
                       </div>
                     </div>
                   </div>
@@ -277,19 +296,20 @@ export default function EnglishPage() {
 
           {/* AI Tutor Card */}
           <motion.div
-             whileHover={{ scale: 1.02, y: -4 }}
+             whileHover={{ scale: 1.02, y: -3 }}
              onClick={() => setAppState('chat')}
-             className="relative rounded-[2.5rem] p-8 border-2 bg-slate-900 border-slate-800 cursor-pointer overflow-hidden group shadow-xl"
+             className="relative rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-6 border-2 bg-slate-900 border-slate-800 cursor-pointer overflow-hidden group shadow-sm hover:shadow-md flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/40 transition-all"></div>
-            <div className="flex flex-col h-full relative z-10">
-              <div className="w-20 h-20 rounded-3xl bg-indigo-600 flex items-center justify-center mb-6 shadow-xl text-white">
-                <Bot size={40} />
+            <div className="absolute top-0 right-0 w-28 h-28 bg-indigo-500/20 rounded-full blur-2xl -mr-14 -mt-14 group-hover:bg-indigo-500/30 transition-all pointer-events-none"></div>
+            <div className="flex flex-col h-full relative z-10 text-white">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-indigo-600 flex items-center justify-center mb-2.5 sm:mb-4 shadow-sm text-white">
+                <Bot className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2">المعلم الذكي AI</h3>
-              <p className="text-slate-400 font-medium mb-6 leading-relaxed">تدرب على المحادثة في مواضيع حرة مع ذكاء اصطناعي متطور يصحح لك أخطاءك.</p>
-              <div className="mt-auto flex items-center gap-2 text-indigo-400 font-bold">
-                ابدأ المحادثة الآن <ArrowRight size={20} />
+              <h3 className="text-xs sm:text-base md:text-lg font-black text-white mb-1 leading-snug">المعلم الذكي AI</h3>
+              <p className="text-slate-400 font-medium mb-3 sm:mb-4 text-[10px] sm:text-xs leading-relaxed line-clamp-2">تدرب على المحادثة في مواضيع حرة مع ذكاء اصطناعي متطور يصحح لك أخطاءك.</p>
+              <div className="mt-auto flex items-center gap-1 text-indigo-400 font-bold text-[10px] sm:text-xs">
+                <span>ابدأ المحادثة الآن</span>
+                <ArrowRight size={14} />
               </div>
             </div>
           </motion.div>
@@ -310,45 +330,48 @@ export default function EnglishPage() {
           العودة للمسار التعليمي
         </button>
 
-        <div className={`p-12 rounded-[3rem] bg-gradient-to-br ${selectedLevel.color} text-white shadow-2xl relative overflow-hidden`}>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-          <div className="relative z-10 flex items-center gap-8">
-            <div className="p-6 bg-white/20 rounded-[2rem] backdrop-blur-xl shadow-inner">{selectedLevel.icon}</div>
-            <div>
-              <span className="bg-white/20 px-4 py-1.5 rounded-full text-sm font-black backdrop-blur-xl mb-4 inline-block tracking-wider uppercase">
+        <div className={`p-4 sm:p-7 md:p-8 rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] bg-gradient-to-br ${selectedLevel.color} text-white shadow-xl relative overflow-hidden`}>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+          <div className="relative z-10 flex items-center gap-3 sm:gap-5">
+            <div className="p-3 sm:p-4 bg-white/20 rounded-xl sm:rounded-2xl backdrop-blur-xl shadow-inner shrink-0">{selectedLevel.icon}</div>
+            <div className="min-w-0 flex-1">
+              <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-black backdrop-blur-xl mb-1.5 inline-block tracking-wider uppercase">
                 {selectedLevel.badge}
               </span>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tight">{selectedLevel.title}</h2>
+              <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight leading-snug">{selectedLevel.title}</h2>
             </div>
           </div>
-          <p className="text-white/90 mt-8 text-xl max-w-2xl font-medium leading-relaxed">{selectedLevel.description}</p>
+          <p className="text-white/90 mt-3 sm:mt-5 text-xs sm:text-base max-w-2xl font-medium leading-relaxed">{selectedLevel.description}</p>
         </div>
 
-        <div className="grid gap-5">
+        {/* Lessons List in 2-by-2 Paired Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4 md:gap-5">
           {selectedLevel.lessons.map((lesson, idx) => {
             const isCompleted = progress[lesson.id];
             return (
               <motion.div 
                 key={lesson.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
+                transition={{ delay: (idx % 8) * 0.05 }}
                 onClick={() => startLessonSequence(lesson, selectedLevel)}
-                className="bg-white p-6 rounded-3xl border-2 border-slate-50 flex items-center justify-between cursor-pointer hover:border-indigo-400 hover:shadow-xl transition-all group"
+                className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border-2 border-slate-100 flex flex-col justify-between cursor-pointer hover:border-indigo-400 hover:shadow-lg transition-all group"
               >
-                <div className="flex items-center gap-6">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl border-2 transition-all ${
+                <div className="flex items-start gap-2.5 sm:gap-4 mb-3">
+                  <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center font-black text-xs sm:text-base border-2 shrink-0 transition-all ${
                     isCompleted ? 'bg-green-100 border-green-500 text-green-600' : 'bg-slate-50 border-slate-100 text-slate-400 group-hover:border-indigo-400 group-hover:text-indigo-600'
                   }`}>
-                    {isCompleted ? <Check size={28} strokeWidth={3} /> : idx + 1}
+                    {isCompleted ? <Check size={18} strokeWidth={3} /> : idx + 1}
                   </div>
-                  <div>
-                    <h3 className="font-black text-slate-800 text-xl group-hover:text-indigo-600 transition">{lesson.title}</h3>
-                    <p className="text-slate-500 font-bold">{lesson.steps.length} أنشطة تفاعلية</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-black text-slate-800 text-xs sm:text-base group-hover:text-indigo-600 transition truncate">{lesson.title}</h3>
+                    <p className="text-slate-400 font-bold text-[10px] sm:text-xs">{lesson.steps.length} أنشطة تفاعلية</p>
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
-                  <PlayCircle size={28} />
+                <div className="flex justify-end pt-2 border-t border-slate-50">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-xs">
+                    <PlayCircle size={18} />
+                  </div>
                 </div>
               </motion.div>
             );
@@ -556,12 +579,12 @@ export default function EnglishPage() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-           <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl"></div>
+        <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] p-4 sm:p-7 md:p-8 text-white shadow-xl relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+           <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
            <div className="relative z-10">
-             <h1 className="text-4xl md:text-5xl font-black mb-4">بنك المواقف اليومية الشامل 🌍</h1>
-             <p className="text-slate-300 text-xl font-medium max-w-2xl leading-relaxed">أكثر من 1000 جملة وتعبير في 44 موقف حياتي مختلف، مرتبة لسهولة الحفظ والاستخدام في حياتك اليومية.</p>
+             <h1 className="text-xl sm:text-3xl md:text-4xl font-black mb-2 leading-snug">بنك المواقف اليومية الشامل 🌍</h1>
+             <p className="text-slate-300 text-xs sm:text-sm md:text-base font-medium max-w-2xl leading-relaxed">أكثر من 1000 جملة وتعبير في 44 موقف حياتي مختلف، مرتبة لسهولة الحفظ والاستخدام في حياتك اليومية.</p>
            </div>
         </div>
 
@@ -603,33 +626,36 @@ export default function EnglishPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-4">
+                    {/* Phrases in 2-by-2 Paired Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
                       {filteredPhrases.map((phrase, i) => (
                         <motion.div
                           key={i}
-                          initial={{ opacity: 0, y: 20 }}
+                          initial={{ opacity: 0, y: 15 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true, margin: "-10%" }}
-                          className="group p-6 md:p-8 rounded-[2rem] bg-white border-2 border-slate-50 hover:border-indigo-200 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1"
+                          className="group p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white border-2 border-slate-100 hover:border-indigo-300 transition-all flex flex-col justify-between gap-3 shadow-xs hover:shadow-md"
                         >
                           <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-4 mb-3">
-                               <span className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight" dir="ltr">{phrase.eng}</span>
-                               <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-sm font-bold" dir="ltr">{phrase.phonetic}</span>
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
+                               <span className="text-xs sm:text-lg font-black text-slate-900 tracking-tight leading-tight" dir="ltr">{phrase.eng}</span>
+                               <span className="px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded text-[9px] sm:text-xs font-bold" dir="ltr">{phrase.phonetic}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                               <div className="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
-                               <p className="text-xl md:text-2xl text-slate-600 font-bold">{phrase.ar}</p>
+                            <div className="flex items-start gap-1.5">
+                               <div className="w-1 h-4 bg-indigo-500 rounded-full mt-1 shrink-0"></div>
+                               <p className="text-[11px] sm:text-sm text-slate-600 font-bold leading-relaxed">{phrase.ar}</p>
                             </div>
                           </div>
-                          <button 
-                             onClick={() => speak(phrase.eng)}
-                             className="w-full md:w-16 md:h-16 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm font-black group-hover:scale-110"
-                             title="استماع للنطق"
-                          >
-                            <Volume2 size={24} />
-                            <span className="md:hidden mr-2">استماع للنطق</span>
-                          </button>
+                          <div className="pt-2 border-t border-slate-50 flex justify-end">
+                            <button 
+                               onClick={() => speak(phrase.eng)}
+                               className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl flex items-center gap-1.5 text-xs font-bold transition-all shadow-xs"
+                               title="استماع للنطق"
+                            >
+                              <Volume2 size={14} />
+                              <span className="text-[10px] sm:text-xs">استماع</span>
+                            </button>
+                          </div>
                         </motion.div>
                       ))}
                     </div>

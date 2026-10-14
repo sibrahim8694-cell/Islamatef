@@ -391,56 +391,61 @@ export default function KidsPage() {
 
   const renderHub = () => (
     <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center gap-10">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-        <div className="w-40 h-40 md:w-48 md:h-48 bg-white/20 backdrop-blur-xl rounded-[2rem] flex items-center justify-center p-8 shrink-0 shadow-inner">
-           <Trophy size={100} className="text-amber-300 drop-shadow-lg" />
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl sm:rounded-3xl md:rounded-[3rem] p-4 sm:p-7 md:p-10 text-white relative overflow-hidden shadow-xl flex flex-col md:flex-row items-center gap-4 sm:gap-6">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+        <div className="w-14 h-14 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/20 backdrop-blur-xl rounded-2xl sm:rounded-3xl flex items-center justify-center p-2 sm:p-4 shrink-0 shadow-inner">
+           <Trophy className="w-8 h-8 sm:w-14 sm:h-14 text-amber-300 drop-shadow-md" />
         </div>
         <div className="relative z-10 flex-1 text-center md:text-right">
-          <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">مرحباً بك في <br/><span className="text-amber-300">عالم الأبطال! 🌟</span></h1>
-          <p className="text-indigo-100 text-xl font-medium mb-8">لديك حالياً <span className="font-black text-2xl text-white">{points}</span> نقطة خبرة. استمر في الإبداع!</p>
-          <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-             <div className="bg-white/10 px-6 py-3 rounded-2xl flex items-center gap-3 border border-white/20">
-               <Sparkles className="text-amber-300" />
-               <span className="font-bold">مستوى المكتشف</span>
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-black mb-1.5 sm:mb-2 leading-snug">
+            مرحباً بك في <span className="text-amber-300">عالم الأبطال! 🌟</span>
+          </h1>
+          <p className="text-indigo-100 text-xs sm:text-base font-medium mb-3 sm:mb-4">
+            لديك حالياً <span className="font-black text-white">{points}</span> نقطة خبرة. استمر في الإبداع!
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+             <div className="bg-white/10 px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl sm:rounded-2xl flex items-center gap-1.5 border border-white/20 text-xs sm:text-sm font-bold">
+               <Sparkles size={14} className="text-amber-300" />
+               <span>مستوى المكتشف</span>
              </div>
-             <div className="bg-white/10 px-6 py-3 rounded-2xl flex items-center gap-3 border border-white/20">
-               <Heart className="text-rose-400" />
-               <span className="font-bold">أنت مبدع اليوم!</span>
+             <div className="bg-white/10 px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl sm:rounded-2xl flex items-center gap-1.5 border border-white/20 text-xs sm:text-sm font-bold">
+               <Heart size={14} className="text-rose-400" />
+               <span>أنت مبدع اليوم!</span>
              </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* 4 Main Sections in 2-by-2 paired grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {[
-          { id: 'arabic', title: 'عالم الحروف 🅰️', color: 'bg-rose-50 border-rose-200 text-rose-600', icon: <Pencil size={40} /> },
-          { id: 'math', title: 'سحر الأرقام 🔢', color: 'bg-sky-50 border-sky-200 text-sky-600', icon: <Calculator size={40} /> },
-          { id: 'stories', title: 'قصص الحكايات 📖', color: 'bg-emerald-50 border-emerald-200 text-emerald-600', icon: <BookOpen size={40} /> },
-          { id: 'creative', title: 'لوحة الإبداع 🎨', color: 'bg-amber-50 border-amber-200 text-amber-600', icon: <Gamepad2 size={40} /> }
+          { id: 'arabic', title: 'عالم الحروف 🅰️', color: 'bg-rose-50 border-rose-200 text-rose-600', icon: <Pencil size={32} /> },
+          { id: 'math', title: 'سحر الأرقام 🔢', color: 'bg-sky-50 border-sky-200 text-sky-600', icon: <Calculator size={32} /> },
+          { id: 'stories', title: 'قصص الحكايات 📖', color: 'bg-emerald-50 border-emerald-200 text-emerald-600', icon: <BookOpen size={32} /> },
+          { id: 'creative', title: 'لوحة الإبداع 🎨', color: 'bg-amber-50 border-amber-200 text-amber-600', icon: <Gamepad2 size={32} /> }
         ].map((item) => (
           <motion.div
             key={item.id}
-            whileHover={{ scale: 1.05, y: -8 }}
+            whileHover={{ scale: 1.03, y: -4 }}
             onClick={() => setActiveTab(item.id as KidsTab)}
-            className={`${item.color} border-4 rounded-[2.5rem] p-10 cursor-pointer text-center group shadow-md transition-all hover:shadow-2xl`}
+            className={`${item.color} border-2 sm:border-4 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-7 md:p-8 cursor-pointer text-center group shadow-xs transition-all hover:shadow-xl flex flex-col justify-between`}
           >
-             <div className={`mb-6 flex justify-center group-hover:scale-110 transition duration-500`}>
+             <div className="mb-3 sm:mb-4 flex justify-center group-hover:scale-110 transition duration-300">
                 {item.icon}
              </div>
-             <h3 className="text-2xl font-black">{item.title}</h3>
-             <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 font-bold">
-               هيا نكتشف <ArrowRight size={20} />
+             <h3 className="text-sm sm:text-xl font-black">{item.title}</h3>
+             <div className="mt-2 text-xs sm:text-sm font-bold opacity-80 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+               هيا نكتشف <ArrowRight size={14} />
              </div>
           </motion.div>
         ))}
       </div>
 
-      <div className="bg-white rounded-[3rem] p-8 md:p-10 border-4 border-slate-100 shadow-xl text-right" dir="rtl">
-        <h2 className="text-3xl font-black text-slate-800 mb-8 flex items-center gap-4">
-          <Trophy className="text-amber-500" /> لوحة الإنجازات والأوسمة
+      <div className="bg-white rounded-2xl sm:rounded-[3rem] p-5 sm:p-8 md:p-10 border-2 sm:border-4 border-slate-100 shadow-lg text-right" dir="rtl">
+        <h2 className="text-xl sm:text-3xl font-black text-slate-800 mb-6 flex items-center gap-3">
+          <Trophy className="text-amber-500" size={24} /> لوحة الإنجازات والأوسمة
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
            {[
              { id: 'first_letter', label: 'بداية الحروف', icon: '🅰️', earned: points > 50 },
              { id: 'math_master', label: 'عبقري الأرقام', icon: '🧮', earned: points > 200 },
@@ -449,42 +454,43 @@ export default function KidsPage() {
              { id: 'daily_player', label: 'بطل يومي', icon: '🔥', earned: false },
              { id: 'fast_learner', label: 'المتعلم السريع', icon: '⚡', earned: false },
            ].map(badge => (
-             <div key={badge.id} className={`flex flex-col items-center gap-3 p-6 rounded-3xl border-2 transition-all ${badge.earned ? 'border-amber-400 bg-amber-50' : 'border-slate-100 bg-slate-50 opacity-40 grayscale'}`}>
-               <span className="text-4xl">{badge.icon}</span>
-               <span className="font-bold text-center text-sm">{badge.label}</span>
+             <div key={badge.id} className={`flex flex-col items-center gap-2 p-3 sm:p-5 rounded-2xl border-2 transition-all ${badge.earned ? 'border-amber-400 bg-amber-50' : 'border-slate-100 bg-slate-50 opacity-40 grayscale'}`}>
+               <span className="text-2xl sm:text-4xl">{badge.icon}</span>
+               <span className="font-bold text-center text-xs sm:text-sm">{badge.label}</span>
              </div>
            ))}
         </div>
       </div>
 
-      {/* Youtube Channels for Kids */}
-      <div className="bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl" dir="rtl">
+      {/* Youtube Channels for Kids: 2-by-2 paired grid */}
+      <div className="bg-slate-900 rounded-2xl sm:rounded-[3rem] p-5 sm:p-8 md:p-10 text-white relative overflow-hidden shadow-2xl" dir="rtl">
         <div className="absolute top-0 left-0 w-64 h-64 bg-red-600/20 rounded-full blur-3xl -ml-32 -mt-32"></div>
         <div className="relative z-10">
-          <h2 className="text-3xl font-black mb-8 flex items-center gap-4">
-            <Youtube className="text-red-500" size={40} /> قنوات يوتيوب تعليمية ومفيدة للأطفال 📺
+          <h2 className="text-xl sm:text-3xl font-black mb-6 flex items-center gap-3">
+            <Youtube className="text-red-500" size={28} /> قنوات يوتيوب تعليمية ومفيدة للأطفال 📺
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
             {[
               { name: 'تعلم مع زكريا', desc: 'قناة ممتازة لتعليم الأطفال الحروف والقراءة، والوضوء والصلاة والسور القصيرة بأسلوب كرتوني.', url: 'https://www.youtube.com/c/Learnwithzakaria', icon: '🕌' },
-              { name: 'طيور الجنة بيبي - تعليمي', desc: 'تضم مجموعة كبيرة من الأناشيد لتعليم الحروف والأرقام وأسماء الحيوانات.', url: 'https://www.youtube.com/user/toyoraljannah', icon: '🐦' },
               { name: 'عدنان معلم القرآن', desc: 'تطبيق موجه للأطفال لتعليم سور القرآن الكريم والأذكار وحروف الهجاء والتلاوة.', url: 'https://www.youtube.com/@adnanquran', icon: '📖' },
+              { name: 'طيور الجنة بيبي', desc: 'تضم مجموعة كبيرة من الأناشيد لتعليم الحروف والأرقام وأسماء الحيوانات.', url: 'https://www.youtube.com/user/toyoraljannah', icon: '🐦' },
+              { name: 'سراج التعليمي', desc: 'مسلسل كرتوني ثلاثي الأبعاد يقدم مغامرات راشد ونورة في استكشاف الحروف العربية.', url: 'https://www.youtube.com/@SirajShow', icon: '⭐' },
             ].map(channel => (
               <motion.div
                 key={channel.name}
-                whileHover={{ scale: 1.03, y: -4 }}
+                whileHover={{ scale: 1.02, y: -3 }}
                 onClick={() => window.open(channel.url, '_blank')}
-                className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl cursor-pointer hover:bg-white/20 transition-all flex flex-col justify-between"
+                className="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl cursor-pointer hover:bg-white/20 transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mb-4 shadow-sm">
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center text-xl sm:text-3xl mb-3 shadow-sm">
                     {channel.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{channel.name}</h3>
-                  <p className="text-white/70 text-sm leading-relaxed font-medium pb-4">{channel.desc}</p>
+                  <h3 className="text-xs sm:text-lg font-bold text-white mb-1.5">{channel.name}</h3>
+                  <p className="text-white/70 text-[11px] sm:text-xs leading-relaxed font-medium pb-3 line-clamp-2">{channel.desc}</p>
                 </div>
-                <div className="mt-auto flex items-center gap-2 text-white font-bold text-sm bg-red-600/80 w-max px-4 py-2 rounded-xl">
-                  زيارة القناة <ExternalLink size={16} />
+                <div className="mt-auto flex items-center gap-1.5 text-white font-bold text-[11px] sm:text-xs bg-red-600/80 w-max px-3 py-1.5 rounded-xl">
+                  زيارة القناة <ExternalLink size={13} />
                 </div>
               </motion.div>
             ))}
@@ -609,11 +615,12 @@ export default function KidsPage() {
             <p className="text-emerald-100 text-xl font-medium">استمتع بأجمل القصص مع الصوت والرسوم الجميلة</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Stories Grid: 2-by-2 paired layout */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
             {storiesData.map((story, i) => (
               <motion.div
                 key={story.id}
-                whileHover={{ scale: 1.05, rotate: i % 2 === 0 ? 2 : -2 }}
+                whileHover={{ scale: 1.02, y: -4 }}
                 onClick={() => {
                   setSelectedStory(story);
                   addXP(30);
@@ -621,32 +628,35 @@ export default function KidsPage() {
                 }}
                 className="group cursor-pointer"
               >
-                <div className={`bg-gradient-to-br ${story.color} rounded-[2.5rem] p-8 text-white h-72 flex flex-col items-center justify-center relative overflow-hidden shadow-xl border-4 border-white/20`}>
+                <div className={`bg-gradient-to-br ${story.color} rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-7 text-white h-56 sm:h-72 flex flex-col items-center justify-between relative overflow-hidden shadow-md hover:shadow-xl border-2 sm:border-4 border-white/20 transition-all`}>
                   <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/20 rounded-full blur-2xl"></div>
-                  <span className="text-7xl mb-6 drop-shadow-lg">{story.icon}</span>
-                  <h3 className="text-2xl font-black text-center leading-tight mb-4">{story.title}</h3>
-                  <div className="bg-white/30 backdrop-blur-md px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2">
-                     <BookOpen size={16} /> استماع وقراءة
+                  <span className="text-4xl sm:text-6xl drop-shadow-md">{story.icon}</span>
+                  <div className="text-center">
+                    <h3 className="text-xs sm:text-xl font-black leading-tight mb-2 line-clamp-2">{story.title}</h3>
+                    <p className="text-white/80 text-[10px] sm:text-xs font-medium hidden sm:line-clamp-2">{story.summary}</p>
+                  </div>
+                  <div className="bg-white/25 backdrop-blur-md px-3 py-1.5 rounded-full font-bold text-[10px] sm:text-xs flex items-center gap-1.5">
+                     <BookOpen size={13} /> استماع وقراءة
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="mt-16 bg-white rounded-[3rem] p-8 md:p-12 border-4 border-emerald-100 shadow-xl text-right" dir="rtl">
-            <h2 className="text-3xl font-black text-emerald-600 mb-8 flex items-center gap-4">
-              <Download className="text-emerald-500" /> مصادر تحميل القصص والكتب (PDF)
+          <div className="mt-10 sm:mt-16 bg-white rounded-2xl sm:rounded-[3rem] p-5 sm:p-8 md:p-12 border-2 sm:border-4 border-emerald-100 shadow-lg text-right" dir="rtl">
+            <h2 className="text-xl sm:text-3xl font-black text-emerald-700 mb-6 flex items-center gap-3">
+              <Download className="text-emerald-600" size={24} /> مصادر تحميل القصص والكتب (PDF)
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
               {[
-                { title: "مكتبة نور - قصص أطفال", url: "https://www.noor-book.com/%D9%83%D8%AA%D8%A8-%D9%82%D8%B5%D8%B5-%D8%A7%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84-pdf", color: "text-emerald-600" },
-                { title: "مؤسسة هنداوي - قصص أطفال", url: "https://www.hindawi.org/books/categories/children.stories/", color: "text-emerald-600" },
-                { title: "أطفال الخليج ذوي الاحتياجات", url: "https://ar.gulfkids.com/", color: "text-emerald-600" },
-                { title: "مكتبة كتب pdf - قصص اطفال", url: "https://www.kutub-pdf.net/category/46.html", color: "text-emerald-600" }
+                { title: "مكتبة نور - قصص أطفال", url: "https://www.noor-book.com/%D9%83%D8%AA%D8%A8-%D9%82%D8%B5%D8%B5-%D8%A7%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84-pdf", color: "text-emerald-700" },
+                { title: "مؤسسة هنداوي للأطفال", url: "https://www.hindawi.org/books/categories/children.stories/", color: "text-emerald-700" },
+                { title: "أطفال الخليج التعليمي", url: "https://ar.gulfkids.com/", color: "text-emerald-700" },
+                { title: "مكتبة كتب قصص PDF", url: "https://www.kutub-pdf.net/category/46.html", color: "text-emerald-700" }
               ].map((link, i) => (
-                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-emerald-50 rounded-2xl border-2 border-emerald-100 hover:border-emerald-300 transition group">
-                  <span className={`font-bold text-lg ${link.color}`}>{link.title}</span>
-                  <ArrowRight className="text-emerald-400 group-hover:-translate-x-2 transition-transform" />
+                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3.5 sm:p-5 bg-emerald-50/70 rounded-xl sm:rounded-2xl border border-emerald-200/80 hover:border-emerald-400 transition-all group">
+                  <span className={`font-bold text-xs sm:text-base ${link.color} truncate`}>{link.title}</span>
+                  <ArrowRight size={16} className="text-emerald-500 group-hover:-translate-x-1.5 transition-transform shrink-0 mr-1" />
                 </a>
               ))}
             </div>

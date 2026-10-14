@@ -240,24 +240,24 @@ export default function QuranPage() {
       </div>
 
       {/* Reciter & Search Selection Header */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 flex flex-col lg:flex-row items-stretch justify-between gap-6 shadow-sm overflow-hidden relative">
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-200 flex flex-col lg:flex-row items-stretch justify-between gap-4 sm:gap-6 shadow-sm overflow-hidden relative">
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
         
-        <div className="relative z-10 w-full flex-1 space-y-4">
+        <div className="relative z-10 w-full flex-1 space-y-3 sm:space-y-4">
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h1 className="text-2xl font-bold text-slate-800">اختر القارئ المفضل لديك</h1>
+              <h1 className="text-lg sm:text-2xl font-black text-slate-800">اختر القارئ المفضل لديك</h1>
               {selectedReciter.availableSurahs ? (
-                <span className="px-3 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 text-[10px] sm:text-xs font-bold">
                   التسجيلات المتاحة: {selectedReciter.availableSurahs.length} سورة من النوادر
                 </span>
               ) : (
-                <span className="px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] sm:text-xs font-bold">
                   مصحف كامل 114 سورة (بدقة عالية)
                 </span>
               )}
             </div>
-            <p className="text-slate-500 text-sm">
+            <p className="text-slate-500 text-xs sm:text-sm">
               مصحف إلكتروني شامل بدقة عالية - الشيخ محمد عبدالوهاب الطنطاوي، الشيخ شعبان الصياد، الشيخ محمد رفعت، وجميع كبار القراء.
             </p>
           </div>
@@ -318,48 +318,50 @@ export default function QuranPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-500">
-            <span className="font-bold text-slate-700">القراء المميزون:</span>
-            {[
-              { id: 26, name: 'الطنطاوي (مجود)' },
-              { id: 24, name: 'محمد رفعت (مجود)' },
-              { id: 25, name: 'شعبان الصياد (مجود)' },
-              { id: 1, name: 'الحصري (مجود)' },
-              { id: 2, name: 'عبد الباسط (مجود)' },
-              { id: 3, name: 'المنشاوي (مجود)' },
-            ].map(fastReciter => (
-              <button
-                key={fastReciter.id}
-                onClick={() => {
-                  const reciter = RECITERS.find(r => r.id === fastReciter.id);
-                  if (reciter) {
-                    setSelectedReciter(reciter);
-                    if (isPlaying) {
-                      audioRef.current?.pause();
-                      setIsPlaying(false);
+          <div className="pt-1">
+            <span className="font-bold text-slate-700 text-xs block mb-2">القراء المميزون:</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              {[
+                { id: 26, name: 'الطنطاوي (مجود)' },
+                { id: 24, name: 'محمد رفعت (مجود)' },
+                { id: 25, name: 'شعبان الصياد (مجود)' },
+                { id: 1, name: 'الحصري (مجود)' },
+                { id: 2, name: 'عبد الباسط (مجود)' },
+                { id: 3, name: 'المنشاوي (مجود)' },
+              ].map(fastReciter => (
+                <button
+                  key={fastReciter.id}
+                  onClick={() => {
+                    const reciter = RECITERS.find(r => r.id === fastReciter.id);
+                    if (reciter) {
+                      setSelectedReciter(reciter);
+                      if (isPlaying) {
+                        audioRef.current?.pause();
+                        setIsPlaying(false);
+                      }
+                      setPlayingSurah(null);
                     }
-                    setPlayingSurah(null);
-                  }
-                }}
-                className={`px-3 py-1 rounded-xl border text-xs font-bold transition-all ${
-                  selectedReciter.id === fastReciter.id
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : 'bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 border-slate-200'
-                }`}
-              >
-                {fastReciter.name}
-              </button>
-            ))}
+                  }}
+                  className={`px-2 py-1.5 rounded-xl border text-center text-[11px] sm:text-xs font-bold transition-all truncate ${
+                    selectedReciter.id === fastReciter.id
+                      ? 'bg-[#800020] text-white border-[#800020] shadow-sm'
+                      : 'bg-slate-50 text-slate-700 hover:bg-rose-50 hover:text-[#800020] border-slate-200'
+                  }`}
+                >
+                  {fastReciter.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="hidden lg:flex w-24 h-24 bg-emerald-100 rounded-3xl items-center justify-center shrink-0 my-auto shadow-inner rotate-2 border border-emerald-200/50">
+        <div className="hidden lg:flex w-24 h-24 bg-rose-50 rounded-3xl items-center justify-center shrink-0 my-auto shadow-inner rotate-2 border border-rose-200/50">
           <span className="text-4xl">📖</span>
         </div>
       </div>
 
-      {/* Surahs Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Surahs Grid: 2 columns on mobile and paired layout */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 md:gap-4">
         {filteredSurahs.map(({ name: surahName, index }) => {
           const isCurrentActive = playingSurah === index;
           const isCurrentPlaying = isCurrentActive && isPlaying;
@@ -370,44 +372,52 @@ export default function QuranPage() {
             <motion.div
               layout
               key={index}
-              className={`p-4 rounded-2xl border shadow-sm hover:shadow-md flex items-center justify-between group transition-all duration-300 ${
+              className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border shadow-xs hover:shadow-md flex flex-col justify-between gap-2.5 group transition-all duration-300 ${
                  isCurrentActive 
-                  ? 'border-emerald-500 bg-emerald-50/70 ring-2 ring-emerald-500/20' 
-                  : 'border-slate-200 bg-white hover:border-emerald-300'
+                  ? 'border-[#800020] bg-rose-50/50 ring-2 ring-[#800020]/20' 
+                  : 'border-slate-200/80 bg-white hover:border-[#800020]/40'
               }`}
             >
-              <div className="flex items-center gap-3.5">
-                <span className={`w-11 h-11 flex items-center justify-center rounded-2xl text-sm font-black transition-colors ${
-                  isCurrentActive ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30' : 'bg-slate-100 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-800'
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <span className={`w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl text-[11px] sm:text-sm font-black shrink-0 transition-colors ${
+                  isCurrentActive 
+                    ? 'bg-[#800020] text-white shadow-sm' 
+                    : 'bg-slate-100 text-slate-600 group-hover:bg-rose-50 group-hover:text-[#800020]'
                 }`}>
                   {index + 1}
                 </span>
-                <div>
-                  <span className={`text-base font-bold block ${isCurrentActive ? 'text-emerald-800' : 'text-slate-800'}`}>
+                <div className="min-w-0 flex-1">
+                  <span className={`text-xs sm:text-base font-bold block truncate leading-tight ${isCurrentActive ? 'text-[#800020]' : 'text-slate-800'}`}>
                     سورة {surahName}
                   </span>
-                  <span className="text-[11px] text-slate-400 font-medium">
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium block truncate">
                     {index < 86 ? 'مكية' : 'مدنية'}
                   </span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-slate-100">
                 <button
                   onClick={() => playSurah(index)}
-                  className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all ${
+                  className={`flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all ${
                     isCurrentActive 
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' 
-                    : 'bg-slate-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100/60'
+                    ? 'bg-[#800020] text-white shadow-sm' 
+                    : 'bg-rose-50 text-[#800020] hover:bg-rose-100 border border-rose-200/60'
                   }`}
                   title={isCurrentPlaying ? "إيقاف مؤقت" : "تشغيل التلاوة"}
                 >
                   {isCurrentLoading ? (
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                   ) : isCurrentPlaying ? (
-                    <Pause size={18} />
+                    <>
+                      <Pause size={14} />
+                      <span className="text-[10px] hidden sm:inline">إيقاف</span>
+                    </>
                   ) : (
-                    <Play size={18} className="ml-0.5" />
+                    <>
+                      <Play size={14} className="ml-0.5" />
+                      <span className="text-[10px] hidden sm:inline">تشغيل</span>
+                    </>
                   )}
                 </button>
                 <a
@@ -417,12 +427,12 @@ export default function QuranPage() {
                   rel="noreferrer"
                   download
                   title="تحميل السورة"
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all font-bold"
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200/70 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all shrink-0"
                 >
                   {downloadingSurah === index ? (
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader2 size={13} className="animate-spin" />
                   ) : (
-                    <Download size={16} />
+                    <Download size={13} />
                   )}
                 </a>
               </div>
