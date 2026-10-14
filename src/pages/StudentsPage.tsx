@@ -91,35 +91,36 @@ export default function StudentsPage() {
   return (
     <div className="space-y-12 pb-24 max-w-7xl mx-auto px-4" dir="rtl">
       {/* Header */}
-      <section className="relative overflow-hidden rounded-[3rem] bg-slate-900 border border-slate-800 shadow-2xl p-10 md:p-14 flex flex-col justify-center text-right">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
+      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] bg-slate-900 border border-slate-800 shadow-xl p-6 sm:p-10 md:p-14 flex flex-col justify-center text-right">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none"></div>
           <div className="relative z-10">
-            <div className="flex flex-wrap items-center gap-4 mb-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-400 font-black text-xs uppercase tracking-wider">
-                 <GraduationCap size={16} /> منصة الطالب الذكي
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-indigo-400 font-bold text-xs">
+                 <GraduationCap size={15} /> 
+                 <span>منصة الطالب الذكي</span>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {['ابتدائي', 'إعدادي', 'ثانوي', 'جامعي'].map(l => (
                   <button 
                     key={l}
                     onClick={() => setLevel(l as StudyLevel)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-black transition-all ${level === l ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/40' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all touch-press ${level === l ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/40' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
                   >
                     {l}
                   </button>
                 ))}
               </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-4">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white leading-tight mb-3">
               أدواتك للتميز <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">بالذكاء الاصطناعي</span>
             </h1>
-            <p className="text-slate-400 text-xl font-medium max-w-2xl">أقوى تقنيات الذكاء الاصطناعي: حل المسائل، تبسيط العلوم، ومولد الأوامر الاحترافي.</p>
+            <p className="text-slate-400 text-sm sm:text-lg font-medium max-w-2xl">أقوى تقنيات الذكاء الاصطناعي: حل المسائل، تبسيط العلوم، ومولد الأوامر الاحترافي.</p>
           </div>
       </section>
 
       {/* NotebookLM - Full Restored Section */}
-      <section className="space-y-8">
-        <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-black rounded-[3rem] p-10 md:p-14 text-white relative overflow-hidden shadow-2xl border border-white/5 group">
+      <section className="space-y-6">
+        <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-black rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] p-6 sm:p-10 md:p-14 text-white relative overflow-hidden shadow-xl border border-white/5 group">
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl -mr-48 -mt-48 transition-all duration-700"></div>
           
           <div className="flex flex-col lg:flex-row items-center gap-12 relative z-10">

@@ -443,103 +443,146 @@ export default function QuranPage() {
         </div>
       )}
 
-      {/* Floating Audio Player */}
+      {/* Floating Audio Player - App Mode Docked Player */}
       <AnimatePresence>
         {playingSurah !== null && (
           <motion.div 
-            initial={{ y: 100, opacity: 0 }}
+            initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-20 lg:bottom-8 left-3 right-3 lg:left-1/2 lg:-translate-x-1/2 lg:w-full lg:max-w-3xl bg-slate-900 text-white p-4 rounded-3xl shadow-2xl border border-slate-700 z-50 flex flex-col md:flex-row items-center gap-4"
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="fixed bottom-[64px] lg:bottom-6 left-2 right-2 sm:left-4 sm:right-4 lg:left-1/2 lg:-translate-x-1/2 lg:w-full lg:max-w-3xl bg-slate-900/95 backdrop-blur-xl text-white rounded-2xl shadow-2xl border border-slate-700/90 z-40 overflow-hidden"
           >
-            <div className="flex items-center gap-4 w-full md:w-auto shrink-0 justify-between md:justify-start">
-               <div className="flex flex-col max-w-[180px]">
-                 <span className="text-xs text-emerald-400 font-bold truncate">{selectedReciter.name}</span>
-                 <span className="text-lg font-black truncate">سورة {SURAHS[playingSurah]}</span>
-               </div>
-               <div className="flex items-center gap-2">
-                 <button 
-                   onClick={playPrev} 
-                   disabled={playingSurah === 0}
-                   className="p-2 text-slate-400 hover:text-white disabled:opacity-30 transition"
-                   title="السورة السابقة"
-                 >
-                   <SkipForward size={22} />
-                 </button>
-                 <button 
-                   onClick={() => playSurah(playingSurah)} 
-                   className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white hover:bg-emerald-400 transition transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/30"
-                   title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
-                 >
-                   {isLoading ? (
-                     <Loader2 size={24} className="animate-spin" />
-                   ) : isPlaying ? (
-                     <Pause size={24} />
-                   ) : (
-                     <Play size={24} className="ml-1" />
-                   )}
-                 </button>
-                 <button 
-                   onClick={playNext} 
-                   disabled={playingSurah === 113}
-                   className="p-2 text-slate-400 hover:text-white disabled:opacity-30 transition"
-                   title="السورة التالية"
-                 >
-                   <SkipBack size={22} />
-                 </button>
-               </div>
+            {/* Top Micro Progress Bar */}
+            <div className="w-full bg-slate-800 h-1 relative">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-150"
+                style={{ width: `${progress || 0}%` }}
+              />
             </div>
 
-            <div className="flex-1 w-full flex items-center gap-3">
-               <span className="text-xs font-mono text-slate-400 shrink-0 w-10 text-left">
-                 {formatTime(currentTime)}
-               </span>
-               <input 
-                 type="range" 
-                 min="0" 
-                 max="100" 
-                 value={progress || 0}
-                 onChange={handleSeek}
-                 className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-               />
-               <span className="text-xs font-mono text-slate-400 shrink-0 w-10 text-right">
-                 {formatTime(duration)}
-               </span>
+            <div className="p-3 sm:p-4 flex flex-col gap-2.5">
+              {/* Primary Player Row */}
+              <div className="flex items-center justify-between gap-3">
+                {/* Surah Info */}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                    <Volume2 size={20} className={isPlaying ? "animate-pulse" : ""} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-black text-white truncate">
+                      سورة {SURAHS[playingSurah]}
+                    </span>
+                    <span className="text-xs text-emerald-400 font-bold truncate">
+                      {selectedReciter.name}
+                    </span>
+                  </div>
+                </div>
 
-               <button
-                 onClick={toggleMute}
-                 className="text-slate-400 hover:text-white transition shrink-0 p-1"
-                 title={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
-               >
-                 {isMuted ? <VolumeX size={18} className="text-rose-400" /> : <Volume2 size={18} />}
-               </button>
+                {/* Main Controls (Previous, Play/Pause, Next) */}
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                  <button 
+                    onClick={playPrev} 
+                    disabled={playingSurah === 0}
+                    className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-25 active:scale-90 transition touch-press"
+                    title="السورة السابقة"
+                    aria-label="السورة السابقة"
+                  >
+                    <SkipForward size={20} />
+                  </button>
 
-               <a 
-                 href={getSurahAudioUrl(selectedReciter, playingSurah)}
-                 onClick={(e) => forceDownload(playingSurah, e)}
-                 target="_blank"
-                 rel="noreferrer"
-                 download
-                 title="تحميل السورة"
-                 className="text-slate-400 hover:text-white transition shrink-0 p-1"
-               >
-                 {downloadingSurah === playingSurah ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-               </a>
+                  <button 
+                    onClick={() => playSurah(playingSurah)} 
+                    className="w-11 h-11 bg-emerald-500 rounded-full flex items-center justify-center text-slate-950 hover:bg-emerald-400 transition transform active:scale-95 shadow-md shadow-emerald-500/25 touch-press"
+                    title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                    aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                  >
+                    {isLoading ? (
+                      <Loader2 size={22} className="animate-spin text-slate-950" />
+                    ) : isPlaying ? (
+                      <Pause size={22} className="fill-current" />
+                    ) : (
+                      <Play size={22} className="fill-current mr-0.5" />
+                    )}
+                  </button>
 
-               <button 
-                 onClick={() => {
-                   if (audioRef.current) {
-                     audioRef.current.pause();
-                   }
-                   setIsPlaying(false);
-                   setPlayingSurah(null);
-                   setIsLoading(false);
-                 }} 
-                 className="text-slate-400 hover:text-rose-400 transition shrink-0 mr-1 border-r border-slate-700 pr-3"
-                 title="إغلاق القارئ"
-               >
-                 <X size={20} />
-               </button>
+                  <button 
+                    onClick={playNext} 
+                    disabled={playingSurah === 113}
+                    className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-25 active:scale-90 transition touch-press"
+                    title="السورة التالية"
+                    aria-label="السورة التالية"
+                  >
+                    <SkipBack size={20} />
+                  </button>
+
+                  {/* Close Player Button */}
+                  <button 
+                    onClick={() => {
+                      if (audioRef.current) {
+                        audioRef.current.pause();
+                      }
+                      setIsPlaying(false);
+                      setPlayingSurah(null);
+                      setIsLoading(false);
+                    }} 
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-white/5 transition active:scale-90 touch-press mr-1"
+                    title="إغلاق المشغل"
+                    aria-label="إغلاق المشغل"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress Slider Row & Actions */}
+              <div className="flex items-center gap-2.5 text-xs">
+                <span className="font-mono text-slate-400 shrink-0 w-9 text-left tabular-nums text-[11px]">
+                  {formatTime(currentTime)}
+                </span>
+                
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={progress || 0}
+                  onChange={handleSeek}
+                  aria-label="شريط تقدم التلاوة"
+                  className="w-full h-1.5 bg-slate-700/80 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:h-2 transition-all"
+                />
+
+                <span className="font-mono text-slate-400 shrink-0 w-9 text-right tabular-nums text-[11px]">
+                  {formatTime(duration)}
+                </span>
+
+                <div className="flex items-center gap-1 shrink-0 border-r border-slate-700 pr-2 mr-1">
+                  <button
+                    onClick={toggleMute}
+                    className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white transition active:scale-90 touch-press"
+                    title={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
+                    aria-label={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
+                  >
+                    {isMuted ? <VolumeX size={16} className="text-rose-400" /> : <Volume2 size={16} />}
+                  </button>
+
+                  <a 
+                    href={getSurahAudioUrl(selectedReciter, playingSurah)}
+                    onClick={(e) => forceDownload(playingSurah, e)}
+                    target="_blank"
+                    rel="noreferrer"
+                    download
+                    title="تحميل السورة MP3"
+                    aria-label="تحميل السورة MP3"
+                    className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white transition active:scale-90 touch-press"
+                  >
+                    {downloadingSurah === playingSurah ? (
+                      <Loader2 size={16} className="animate-spin text-emerald-400" />
+                    ) : (
+                      <Download size={16} />
+                    )}
+                  </a>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

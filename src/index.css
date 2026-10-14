@@ -20,6 +20,22 @@
 html, body {
   font-family: 'Cairo', sans-serif;
   background-color: var(--color-slate-50);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Safe area insets for modern mobile screens */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.min-h-screen-safe {
+  min-height: calc(100vh - env(safe-area-inset-bottom, 0px));
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -28,5 +44,13 @@ html, body {
 .hide-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* Touch active micro-interaction */
+.touch-press {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.touch-press:active {
+  transform: scale(0.97);
 }
 

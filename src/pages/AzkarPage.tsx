@@ -28,18 +28,37 @@ export default function AzkarPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-10 pb-20">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-indigo-950 border border-indigo-900 shadow-2xl">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542816417-0983c9c9ad53?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-950 via-indigo-950/90 to-transparent"></div>
+      <div className="relative overflow-hidden rounded-3xl md:rounded-[2rem] bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950 border border-indigo-900 shadow-xl p-6 md:p-10 text-center md:text-right">
+        <div 
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(circle at 20px 20px, rgba(255,255,255,0.2) 2px, transparent 0)`,
+            backgroundSize: '24px 24px'
+          }}
+        />
         
-        <div className="relative p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-10">
-          <div className="max-w-xl text-center md:text-right">
-            <h1 className="text-4xl md:text-5xl font-black text-white leading-[1.3] mb-4 tracking-tight">
-              أذكار الصباح <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">والمساء</span>
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <span className="inline-block px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/30 text-amber-300 text-xs font-bold mb-3">
+              حصن المسلم اليومي
+            </span>
+            <h1 className="text-2xl md:text-4xl font-black text-white leading-tight mb-2 tracking-tight">
+              أذكار الصباح <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400">والمساء</span>
             </h1>
-            <p className="text-lg text-indigo-200/80 leading-relaxed font-medium">
-              حصن المسلم اليومي ومفتاح الطمأنينة والسكينة.
+            <p className="text-sm md:text-base text-indigo-200/80 leading-relaxed font-medium">
+              ألا بذكر الله تطمئن القلوب · اضغط على أي بطاقة لتسجيل القراءة ومتابعة الورد اليومي.
             </p>
+          </div>
+
+          {/* Quick Progress Badge */}
+          <div className="bg-white/10 backdrop-blur-md border border-white/15 px-5 py-3.5 rounded-2xl flex items-center gap-3 text-white">
+            <div className="text-center">
+              <span className="text-2xl font-black font-mono text-amber-300 tabular-nums">
+                {azkarList.filter((_, i) => (progress[`${activeTab}-${i}`] || 0) >= azkarList[i].count).length}
+              </span>
+              <span className="text-slate-400 text-sm"> / {azkarList.length}</span>
+              <p className="text-[10px] text-slate-300 font-bold">الأذكار المكتملة</p>
+            </div>
           </div>
         </div>
       </div>
@@ -95,10 +114,10 @@ export default function AzkarPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => handleZikrClick(index, zikr.count)}
-              className={`relative overflow-hidden cursor-pointer select-none rounded-[2rem] p-6 md:p-8 border-2 transition-all duration-300 ${
+              className={`relative overflow-hidden cursor-pointer select-none rounded-2xl md:rounded-[2rem] p-4 sm:p-6 md:p-8 border-2 transition-all duration-200 touch-press ${
                 isDone 
-                ? 'bg-emerald-50/50 border-emerald-200' 
-                : 'bg-white border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md'
+                ? 'bg-emerald-50/70 border-emerald-300' 
+                : 'bg-white border-slate-200/90 hover:border-indigo-300 shadow-xs active:bg-slate-50'
               }`}
             >
               {isDone && (

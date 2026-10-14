@@ -776,20 +776,22 @@ export default function KidsPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pb-32 space-y-12">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-28 space-y-8">
       <audio ref={audioRef} playsInline />
-      <div className="fixed bottom-6 left-0 right-0 z-50 px-4 md:px-0">
+      
+      {/* Sticky Category Bar for Kids Section */}
+      <div className="sticky top-14 sm:top-16 z-20 py-2">
         <div 
-          className="max-w-4xl mx-auto bg-white/90 backdrop-blur-xl border-2 border-slate-100 rounded-full p-2 shadow-2xl flex items-center justify-between gap-1 overflow-x-auto no-scrollbar"
+          className="max-w-4xl mx-auto bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-2xl p-1.5 shadow-md flex items-center justify-between gap-1 overflow-x-auto hide-scrollbar"
           dir="rtl"
         >
            {[
-             { id: 'home', icon: <LayoutPanelLeft size={24} />, label: 'الرئيسية' },
-             { id: 'arabic', icon: <Music size={24} />, label: 'حروفنا' },
-             { id: 'math', icon: <Calculator size={24} />, label: 'أرقامنا' },
-             { id: 'stories', icon: <BookOpen size={24} />, label: 'قصصنا' },
-             { id: 'creative', icon: <Gamepad2 size={24} />, label: 'ألعابنا' },
-             { id: 'parent', icon: <User size={24} />, label: 'بوابة الأهل' }
+             { id: 'home', icon: <LayoutPanelLeft size={20} />, label: 'الرئيسية' },
+             { id: 'arabic', icon: <Music size={20} />, label: 'حروفنا' },
+             { id: 'math', icon: <Calculator size={20} />, label: 'أرقامنا' },
+             { id: 'stories', icon: <BookOpen size={20} />, label: 'قصصنا' },
+             { id: 'creative', icon: <Gamepad2 size={20} />, label: 'ألعابنا' },
+             { id: 'parent', icon: <User size={20} />, label: 'بوابة الأهل' }
            ].map(tab => (
              <button
                key={tab.id}
@@ -797,10 +799,14 @@ export default function KidsPage() {
                  setActiveTab(tab.id as KidsTab);
                  window.speechSynthesis.cancel();
                }}
-               className={`flex items-center gap-2 px-6 py-4 rounded-full font-black min-w-max transition-all ${activeTab === tab.id ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' : 'text-slate-500 hover:bg-slate-100'}`}
+               className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm min-w-max transition-all touch-press ${
+                 activeTab === tab.id 
+                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' 
+                   : 'text-slate-600 hover:bg-slate-100'
+               }`}
              >
                {tab.icon}
-               <span className="hidden sm:inline">{tab.label}</span>
+               <span>{tab.label}</span>
              </button>
            ))}
         </div>
