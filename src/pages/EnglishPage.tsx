@@ -420,43 +420,7 @@ export default function EnglishPage() {
 
   function speak(text: string, e?: React.MouseEvent) {
     if (e) e.stopPropagation();
-    
-    // For very long texts, use native SpeechSynthesis
-    if (text.length > 150) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
-      }
-      return;
-    }
-    
-    if (audioRef.current) {
-      try {
-        const cleanText = text.substring(0, 150);
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en-US&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
-        
-        audioRef.current.pause();
-        audioRef.current.src = url;
-        audioRef.current.load();
-        
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn("Audio playback blocked, falling back to synthesis", err);
-            if ('speechSynthesis' in window) {
-              window.speechSynthesis.cancel();
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = 'en-US';
-              window.speechSynthesis.speak(utterance);
-            }
-          });
-        }
-      } catch (err) {
-        console.error("Audio error", err);
-      }
-    }
+    playTTS(text, 'en-US', { rate: 0.94 });
   }
 
   async function handleChat(e?: React.FormEvent, manualMessage?: string) {
@@ -829,42 +793,7 @@ function LessonSession({ lesson, level, onClose, onComplete }: {
   };
 
   const speak = (text: string) => {
-    // For very long texts, use native SpeechSynthesis
-    if (text.length > 150) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
-      }
-      return;
-    }
-    
-    if (audioRef.current) {
-      try {
-        const cleanText = text.substring(0, 150);
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en-US&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
-        
-        audioRef.current.pause();
-        audioRef.current.src = url;
-        audioRef.current.load();
-        
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn("Audio playback blocked, falling back to synthesis", err);
-            if ('speechSynthesis' in window) {
-              window.speechSynthesis.cancel();
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = 'en-US';
-              window.speechSynthesis.speak(utterance);
-            }
-          });
-        }
-      } catch (err) {
-        console.error("Audio error", err);
-      }
-    }
+    playTTS(text, 'en-US', { rate: 0.94 });
   };
 
   const handleNext = () => {

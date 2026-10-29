@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sun, Moon, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Sun, Moon, CheckCircle2, RotateCcw, Volume2 } from 'lucide-react';
 import { AZKAR } from '../lib/azkarData';
+import { playTTS, stopTTS } from '../lib/tts';
 
 export default function AzkarPage() {
   const [activeTab, setActiveTab] = useState<'morning' | 'evening'>('morning');
@@ -133,8 +134,20 @@ export default function AzkarPage() {
                   {zikr.text}
                 </p>
                 
-                <div className="flex items-center justify-center pt-2 w-full">
-                  <div className={`w-full py-1.5 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl font-black text-xs sm:text-base transition-colors text-center shadow-inner ${
+                <div className="flex items-center gap-2 pt-2 w-full">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      playTTS(zikr.text, 'ar-SA');
+                    }}
+                    className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-800 transition shrink-0"
+                    title="استمع للذكر بصوت طبيعي"
+                  >
+                    <Volume2 size={18} />
+                  </button>
+
+                  <div className={`flex-1 py-1.5 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl font-black text-xs sm:text-base transition-colors text-center shadow-inner ${
                     isDone 
                     ? 'bg-emerald-600 text-white' 
                     : 'bg-rose-50 text-[#800020] border border-rose-200/50'

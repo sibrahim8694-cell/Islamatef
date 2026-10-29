@@ -5,10 +5,11 @@ import {
   ChevronRight, GraduationCap, Zap, 
   HelpCircle, Download, Send, User, Loader2,
   FileText, Book, Globe, Microscope, Calculator,
-  Palette, Presentation, Search, MessageSquare, Brain
+  Palette, Presentation, Search, MessageSquare, Brain, Volume2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI } from "@google/genai";
+import { playTTS } from '../lib/tts';
 
 type StudyLevel = 'ابتدائي' | 'إعدادي' | 'ثانوي' | 'جامعي';
 
@@ -241,8 +242,21 @@ export default function StudentsPage() {
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-800 text-white'}`}>
                       {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
-                    <div className={`p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-white text-slate-800 border border-slate-100' : 'bg-indigo-600 text-white'}`}>
+                    <div className={`p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-sm relative group ${msg.role === 'user' ? 'bg-white text-slate-800 border border-slate-100' : 'bg-indigo-600 text-white'}`}>
                       {msg.content}
+                      {msg.role === 'assistant' && (
+                        <div className="mt-2 pt-2 border-t border-indigo-500/40 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => playTTS(msg.content, chatSubject === 'اللغة الإنجليزية' ? 'en-US' : 'ar-SA')}
+                            className="text-indigo-200 hover:text-white flex items-center gap-1 text-xs font-bold transition"
+                            title="استمع للإجابة"
+                          >
+                            <Volume2 size={14} />
+                            <span>استماع صوتي</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
