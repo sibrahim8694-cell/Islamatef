@@ -180,10 +180,35 @@ export default function QuranPage() {
     return `${server}/${getSurahNumber(index)}.mp3`;
   };
 
+  const getNextSurahIndex = (currentIndex: number, reciter: Reciter = selectedReciter): number | null => {
+    if (reciter.availableSurahs) {
+      const sorted = [...reciter.availableSurahs].sort((a, b) => a - b);
+      const nextIdx = sorted.find(idx => idx > currentIndex);
+      return nextIdx !== undefined ? nextIdx : null;
+    }
+    return currentIndex < 113 ? currentIndex + 1 : null;
+  };
+
+  const getPrevSurahIndex = (currentIndex: number, reciter: Reciter = selectedReciter): number | null => {
+    if (reciter.availableSurahs) {
+      const sorted = [...reciter.availableSurahs].sort((a, b) => a - b);
+      const prevList = sorted.filter(idx => idx < currentIndex);
+      return prevList.length > 0 ? prevList[prevList.length - 1] : null;
+    }
+    return currentIndex > 0 ? currentIndex - 1 : null;
+  };
+
   const playSurah = async (index: number, customReciter?: Reciter) => {
     if (!audioRef.current) return;
     const currentReciter = customReciter || selectedReciter;
     
+    // Prevent playing unrecorded surahs for historical reciters
+    if (currentReciter.availableSurahs && !currentReciter.availableSurahs.includes(index)) {
+      setIsLoading(false);
+      toast.info(`سورة ${SURAHS[index]} غير متوفرة ضمن التسجيلات المحفوظة للشيخ ${currentReciter.name}`);
+      return;
+    }
+
     try {
       if (playingSurah === index && !customReciter) {
         if (isPlaying) {
@@ -248,11 +273,23 @@ export default function QuranPage() {
   };
 
   const playNext = () => {
-    if (playingSurah !== null && playingSurah < 113) playSurah(playingSurah + 1);
+    if (playingSurah !== null) {
+      const next = getNextSurahIndex(playingSurah);
+      if (next !== null) {
+        playSurah(next);
+      } else {
+        toast.info("تم الوصول إلى آخر سورة مسجلة للشيخ");
+      }
+    }
   };
 
   const playPrev = () => {
-    if (playingSurah !== null && playingSurah > 0) playSurah(playingSurah - 1);
+    if (playingSurah !== null) {
+      const prev = getPrevSurahIndex(playingSurah);
+      if (prev !== null) {
+        playSurah(prev);
+      }
+    }
   };
 
   const forceDownload = async (index: number, e: React.MouseEvent) => {
@@ -290,12 +327,28 @@ export default function QuranPage() {
 
   const handleReciterChange = (newReciter: Reciter) => {
     setSelectedReciter(newReciter);
-    if (isPlaying && playingSurah !== null) {
-      playSurah(playingSurah, newReciter);
-    } else if (playingSurah !== null && audioRef.current) {
-      const url = getSurahAudioUrl(newReciter, playingSurah, false);
-      audioRef.current.src = url;
-      audioRef.current.load();
+    if (playingSurah !== null) {
+      // If currently playing surah is not in the new reciter's recorded surahs, pick the first available
+      if (newReciter.availableSurahs && !newReciter.availableSurahs.includes(playingSurah)) {
+        const firstAvail = newReciter.availableSurahs[0] ?? 0;
+        if (isPlaying) {
+          playSurah(firstAvail, newReciter);
+        } else {
+          setPlayingSurah(firstAvail);
+          if (audioRef.current) {
+            audioRef.current.src = getSurahAudioUrl(newReciter, firstAvail, false);
+            audioRef.current.load();
+          }
+        }
+      } else {
+        if (isPlaying) {
+          playSurah(playingSurah, newReciter);
+        } else if (audioRef.current) {
+          const url = getSurahAudioUrl(newReciter, playingSurah, false);
+          audioRef.current.src = url;
+          audioRef.current.load();
+        }
+      }
     }
   };
 
@@ -419,7 +472,7 @@ export default function QuranPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
               {[
                 { id: 26, name: 'الطنطاوي (مجود)' },
-                { id: 24, name: 'محمد رفعت (مجود)' },
+                { id: 24, name: 'محمد رفعت (نادر)' },
                 { id: 25, name: 'شعبان الصياد (مجود)' },
                 { id: 1, name: 'الحصري (مجود)' },
                 { id: 2, name: 'عبد الباسط (مجود)' },
@@ -450,6 +503,35 @@ export default function QuranPage() {
           <span className="text-4xl">📖</span>
         </div>
       </div>
+
+      {/* Historical Recordings Authenticity Banner */}
+      {selectedReciter.id === 24 && (
+        <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-3.5 sm:p-4 text-amber-900 flex items-start gap-3 shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-amber-200/70 text-amber-800 flex items-center justify-center shrink-0 text-base">
+            🎙️
+          </div>
+          <div className="text-xs sm:text-sm leading-relaxed">
+            <span className="font-bold block text-amber-950 mb-0.5">
+              تسجيلات الشيخ محمد رفعت التاريخية الأصلية (إذاعة القرآن الكريم):
+            </span>
+            استمع إلى التلاوات الخاشعة النادرة بصوت قيثارة السماء الحقيقي (31 سورة مسجلة وموثقة)، مستخرجة مباشرة من أرشيف الإذاعة المصرية بدقة عالية وخالية تماماً من أي دبلجة أو استبدال للأصوات.
+          </div>
+        </div>
+      )}
+
+      {selectedReciter.id === 25 && (
+        <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-3.5 sm:p-4 text-emerald-900 flex items-start gap-3 shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-200/70 text-emerald-800 flex items-center justify-center shrink-0 text-base">
+            ✨
+          </div>
+          <div className="text-xs sm:text-sm leading-relaxed">
+            <span className="font-bold block text-emerald-950 mb-0.5">
+              المصحف المجود للشيخ شعبان الصياد:
+            </span>
+            تلاوات مجودة نادرة وموثقة (65 سورة بصوته الأصيل الخاشع)، بجودة صوتية نقية ودون أي تداخلات.
+          </div>
+        </div>
+      )}
 
       {/* Surahs Grid: 2 columns on mobile and paired layout */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 md:gap-4">
@@ -590,7 +672,7 @@ export default function QuranPage() {
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   <button 
                     onClick={playPrev} 
-                    disabled={playingSurah === 0}
+                    disabled={playingSurah === null || getPrevSurahIndex(playingSurah) === null}
                     className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-25 active:scale-90 transition touch-press"
                     title="السورة السابقة"
                     aria-label="السورة السابقة"
@@ -615,7 +697,7 @@ export default function QuranPage() {
 
                   <button 
                     onClick={playNext} 
-                    disabled={playingSurah === 113}
+                    disabled={playingSurah === null || getNextSurahIndex(playingSurah) === null}
                     className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-25 active:scale-90 transition touch-press"
                     title="السورة التالية"
                     aria-label="السورة التالية"

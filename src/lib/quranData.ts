@@ -50,15 +50,51 @@ export const RECITERS: Reciter[] = [
   },
   { 
     id: 24, 
-    name: 'محمد رفعت (مجود)', 
+    name: 'محمد رفعت (تسجيلات الإذاعة النادرة)', 
     server: 'https://cdn.mp3quran.net/audio/muhammad-refaat/r1', 
-    fallbackServer: 'https://archive.org/download/4011wwwwwwwwwwwwwwwwwwwwwwwwwwww9'
+    fallbackServer: 'https://server14.mp3quran.net/refat',
+    availableSurahs: [
+      0,  // الفاتحة
+      9,  // يونس
+      10, // هود
+      11, // يوسف
+      16, // الإسراء
+      17, // الكهف
+      18, // مريم
+      19, // طه
+      47, // الفتح
+      53, // القمر
+      54, // الرحمن
+      55, // الواقعة
+      68, // الحاقة
+      71, // الجن
+      72, // المزمل
+      74, // القيامة
+      75, // الإنسان
+      76, // المرسلات
+      77, // النبأ
+      78, // النازعات
+      80, // التكوير
+      81, // الإنفطار
+      82, // المطففين
+      84, // البروج
+      85, // الطارق
+      86, // الأعلى
+      87, // الغاشية
+      88, // الفجر
+      95, // العلق
+      97, // البينة
+      99  // العاديات
+    ]
   },
   { 
     id: 25, 
-    name: 'شعبان الصياد (مجود)', 
+    name: 'شعبان الصياد (المصحف المجود)', 
     server: 'https://cdn.mp3quran.net/audio/shaban-sayyad/r1', 
-    fallbackServer: 'https://archive.org/download/Shabaan_ElSayyad_Mojawwad'
+    fallbackServer: 'https://server11.mp3quran.net/shaban',
+    availableSurahs: [
+      1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 15, 16, 18, 19, 20, 21, 23, 25, 26, 27, 28, 31, 32, 34, 37, 39, 40, 41, 42, 44, 45, 46, 51, 52, 53, 58, 59, 66, 67, 68, 76, 77, 78, 79, 80, 81, 86, 87, 88, 89, 90, 91, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104
+    ]
   },
   { 
     id: 26, 
