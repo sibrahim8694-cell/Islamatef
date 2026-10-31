@@ -7,7 +7,7 @@ import {
 import confetti from 'canvas-confetti';
 import { kidsSound } from '../../lib/kidsSoundFX';
 import { ProphetStory, QuranAnimalStory } from '../../data/kidsIslamicData';
-import { getBestVoice, stopTTS } from '../../lib/tts';
+import { narrateSentence, stopTTS } from '../../lib/tts';
 
 interface StoryModalProps {
   story: ProphetStory | QuranAnimalStory | null;
@@ -25,7 +25,7 @@ export const StoryModal: React.FC<StoryModalProps> = ({
   if (!story) return null;
 
   const [currentSentenceIdx, setCurrentSentenceIdx] = useState<number>(0);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speechRate, setSpeechRate] = useState<number>(0.92);
   const [ambientActive, setAmbientActive] = useState<boolean>(false);
   const [completed, setCompleted] = useState<boolean>(false);
@@ -34,19 +34,37 @@ export const StoryModal: React.FC<StoryModalProps> = ({
 
   const sentenceRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isCancelledRef = useRef<boolean>(false);
-  const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const isPlayingRef = useRef<boolean>(true);
+  isPlayingRef.current = isPlaying;
+  const cancelNarrateRef = useRef<(() => void) | null>(null);
 
   const isProphet = storyType === 'prophet';
   const prophetStory = isProphet ? (story as ProphetStory) : null;
   const animalStory = !isProphet ? (story as QuranAnimalStory) : null;
 
-  // Cleanup on unmount or story close
+  // Cleanup on unmount or story close + auto start storytelling
   useEffect(() => {
     isCancelledRef.current = false;
+    isPlayingRef.current = true;
+    setIsPlaying(true);
+    setCurrentSentenceIdx(0);
     kidsSound.playStoryChime();
+
+    // Auto-narrate the story immediately upon opening with a gentle delay
+    const startTimer = setTimeout(() => {
+      if (!isCancelledRef.current && isPlayingRef.current) {
+        speakSentence(0);
+      }
+    }, 450);
 
     return () => {
       isCancelledRef.current = true;
+      isPlayingRef.current = false;
+      clearTimeout(startTimer);
+      if (cancelNarrateRef.current) {
+        cancelNarrateRef.current();
+        cancelNarrateRef.current = null;
+      }
       stopTTS();
       kidsSound.toggleStoryAmbient(false);
     };
@@ -63,9 +81,10 @@ export const StoryModal: React.FC<StoryModalProps> = ({
   }, [currentSentenceIdx, isPlaying]);
 
   const speakSentence = (index: number) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (isCancelledRef.current) return;
     if (index >= story.sentences.length) {
       setIsPlaying(false);
+      isPlayingRef.current = false;
       setCompleted(true);
       kidsSound.playSuccess();
       confetti({
@@ -77,70 +96,56 @@ export const StoryModal: React.FC<StoryModalProps> = ({
       return;
     }
 
-    stopTTS();
-    setCurrentSentenceIdx(index);
-
-    const textToSpeak = story.sentences[index];
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = 'ar-SA';
-    utterance.rate = speechRate;
-    utterance.pitch = 1.02; // Warm, natural human pitch
-
-    // Choose the best natural/neural Arabic voice
-    const bestVoice = getBestVoice('ar-SA');
-    if (bestVoice) {
-      utterance.voice = bestVoice;
+    if (cancelNarrateRef.current) {
+      cancelNarrateRef.current();
+      cancelNarrateRef.current = null;
     }
 
-    activeUtteranceRef.current = utterance;
+    setCurrentSentenceIdx(index);
+    const textToSpeak = story.sentences[index];
 
-    utterance.onend = () => {
-      activeUtteranceRef.current = null;
-      if (isCancelledRef.current) return;
-      // Natural breath pause between sentences like a human storyteller
-      setTimeout(() => {
-        if (!isCancelledRef.current && isPlaying) {
-          speakSentence(index + 1);
+    cancelNarrateRef.current = narrateSentence(textToSpeak, {
+      rate: speechRate,
+      onEnd: () => {
+        cancelNarrateRef.current = null;
+        if (isCancelledRef.current || !isPlayingRef.current) return;
+        // Natural breath pause between sentences like a human storyteller
+        setTimeout(() => {
+          if (!isCancelledRef.current && isPlayingRef.current) {
+            speakSentence(index + 1);
+          }
+        }, 400);
+      },
+      onError: () => {
+        cancelNarrateRef.current = null;
+        if (!isCancelledRef.current && isPlayingRef.current) {
+          setTimeout(() => speakSentence(index + 1), 600);
         }
-      }, 400);
-    };
-
-    utterance.onerror = (err) => {
-      activeUtteranceRef.current = null;
-      if (err.error === 'canceled' || err.error === 'interrupted') return;
-      if (!isCancelledRef.current && isPlaying) {
-        setTimeout(() => speakSentence(index + 1), 400);
       }
-    };
-
-    window.speechSynthesis.speak(utterance);
+    });
   };
 
   const handleTogglePlay = () => {
     if (isPlaying) {
+      if (cancelNarrateRef.current) {
+        cancelNarrateRef.current();
+        cancelNarrateRef.current = null;
+      }
       stopTTS();
       setIsPlaying(false);
+      isPlayingRef.current = false;
     } else {
       setIsPlaying(true);
+      isPlayingRef.current = true;
       speakSentence(currentSentenceIdx);
     }
   };
 
   const handleJumpToSentence = (idx: number) => {
     setCurrentSentenceIdx(idx);
-    if (isPlaying) {
-      speakSentence(idx);
-    } else {
-      // preview single sentence with best voice
-      stopTTS();
-      const utterance = new SpeechSynthesisUtterance(story.sentences[idx]);
-      utterance.lang = 'ar-SA';
-      utterance.rate = speechRate;
-      utterance.pitch = 1.02;
-      const bestVoice = getBestVoice('ar-SA');
-      if (bestVoice) utterance.voice = bestVoice;
-      window.speechSynthesis.speak(utterance);
-    }
+    setIsPlaying(true);
+    isPlayingRef.current = true;
+    speakSentence(idx);
   };
 
   const handleToggleAmbient = () => {
@@ -151,9 +156,9 @@ export const StoryModal: React.FC<StoryModalProps> = ({
 
   const handleRestart = () => {
     setCurrentSentenceIdx(0);
-    if (isPlaying) {
-      speakSentence(0);
-    }
+    setIsPlaying(true);
+    isPlayingRef.current = true;
+    speakSentence(0);
   };
 
   const handleRateChange = (newRate: number) => {

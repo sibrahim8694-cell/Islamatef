@@ -183,27 +183,38 @@ function stopKeepAlive() {
   }
 }
 
+let activeAudioElement: HTMLAudioElement | null = null;
+
 /**
  * Stops all ongoing speech immediately and flushes the queue.
  */
 export function stopTTS() {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    stopKeepAlive();
+    activeChunkQueue = [];
+    isQueueRunning = false;
+    currentSentenceIdx = 0;
 
-  stopKeepAlive();
-  activeChunkQueue = [];
-  isQueueRunning = false;
-  currentSentenceIdx = 0;
+    activeUtterances.forEach(u => {
+      u.onend = null;
+      u.onerror = null;
+    });
+    activeUtterances.clear();
 
-  activeUtterances.forEach(u => {
-    u.onend = null;
-    u.onerror = null;
-  });
-  activeUtterances.clear();
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      // ignore
+    }
+  }
 
-  try {
-    window.speechSynthesis.cancel();
-  } catch {
-    // ignore
+  if (activeAudioElement) {
+    try {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+      activeAudioElement.src = '';
+    } catch {}
+    activeAudioElement = null;
   }
 }
 
@@ -215,7 +226,6 @@ export function playTTS(
   lang: string = 'ar-SA',
   options: TTSOptions = {}
 ): void {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   if (!text || !text.trim()) return;
 
   stopTTS();
@@ -224,78 +234,230 @@ export function playTTS(
   const sentences = splitTextIntoSentences(text);
   const bestVoice = getBestVoice(lang);
 
-  // Default storytelling rates:
-  // Arabic is best delivered around 0.90 to 0.94 for clarity and dignity without rushing.
-  // English is best around 0.95 to 1.0.
   const targetRate = options.rate ?? (isArabic ? 0.92 : 0.96);
   const targetPitch = options.pitch ?? (isArabic ? 1.02 : 1.0);
   const targetVolume = options.volume ?? 1.0;
 
   currentSentenceIdx = 0;
   isQueueRunning = true;
-  startKeepAlive();
 
-  const speakNextSentence = (index: number) => {
-    if (!isQueueRunning) return;
+  // If SpeechSynthesis has an authentic Arabic voice, use SpeechSynthesis
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window && bestVoice) {
+    startKeepAlive();
 
-    if (index >= sentences.length) {
-      stopKeepAlive();
-      isQueueRunning = false;
-      options.onEnd?.();
-      return;
-    }
-
-    currentSentenceIdx = index;
-    const currentSentence = sentences[index];
-    options.onSentenceChange?.(index, currentSentence);
-
-    if (index === 0) {
-      options.onStart?.();
-    }
-
-    const utterance = new SpeechSynthesisUtterance(currentSentence);
-    utterance.lang = lang;
-    utterance.rate = targetRate;
-    utterance.pitch = targetPitch;
-    utterance.volume = targetVolume;
-
-    if (bestVoice) {
-      utterance.voice = bestVoice;
-    }
-
-    // Retain utterance to prevent GC collection in Chrome
-    activeUtterances.add(utterance);
-
-    utterance.onend = () => {
-      activeUtterances.delete(utterance);
+    const speakNextSentence = (index: number) => {
       if (!isQueueRunning) return;
 
-      // Natural pause between sentences for realistic human cadence
-      const pauseDuration = /[!؟?.]/.test(currentSentence.slice(-1)) ? 320 : 180;
-      setTimeout(() => {
-        if (isQueueRunning) {
-          speakNextSentence(index + 1);
-        }
-      }, pauseDuration);
+      if (index >= sentences.length) {
+        stopKeepAlive();
+        isQueueRunning = false;
+        options.onEnd?.();
+        return;
+      }
+
+      currentSentenceIdx = index;
+      const currentSentence = sentences[index];
+      options.onSentenceChange?.(index, currentSentence);
+
+      if (index === 0) {
+        options.onStart?.();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(currentSentence);
+      utterance.lang = lang;
+      utterance.rate = targetRate;
+      utterance.pitch = targetPitch;
+      utterance.volume = targetVolume;
+      utterance.voice = bestVoice;
+
+      activeUtterances.add(utterance);
+
+      utterance.onend = () => {
+        activeUtterances.delete(utterance);
+        if (!isQueueRunning) return;
+
+        const pauseDuration = /[!؟?.]/.test(currentSentence.slice(-1)) ? 320 : 180;
+        setTimeout(() => {
+          if (isQueueRunning) {
+            speakNextSentence(index + 1);
+          }
+        }, pauseDuration);
+      };
+
+      utterance.onerror = (err) => {
+        activeUtterances.delete(utterance);
+        if (err.error === 'canceled' || err.error === 'interrupted') return;
+        // Fallback to audio stream for this sentence if utterance errored
+        playViaAudioStream(currentSentence, () => {
+          if (isQueueRunning) {
+            speakNextSentence(index + 1);
+          }
+        }, options.onError);
+      };
+
+      window.speechSynthesis.speak(utterance);
     };
 
-    utterance.onerror = (err) => {
-      activeUtterances.delete(utterance);
-      // Ignore cancellation events
-      if (err.error === 'canceled' || err.error === 'interrupted') return;
-      options.onError?.(err);
+    speakNextSentence(0);
+  } else {
+    // Direct audio stream fallback for devices lacking SpeechSynthesis Arabic voices
+    const speakNextSentenceAudio = (index: number) => {
+      if (!isQueueRunning) return;
+      if (index >= sentences.length) {
+        isQueueRunning = false;
+        options.onEnd?.();
+        return;
+      }
 
-      setTimeout(() => {
-        if (isQueueRunning) {
-          speakNextSentence(index + 1);
-        }
-      }, 250);
+      currentSentenceIdx = index;
+      const currentSentence = sentences[index];
+      options.onSentenceChange?.(index, currentSentence);
+      if (index === 0) options.onStart?.();
+
+      playViaAudioStream(
+        currentSentence,
+        () => {
+          if (isQueueRunning) {
+            setTimeout(() => speakNextSentenceAudio(index + 1), 220);
+          }
+        },
+        options.onError
+      );
     };
 
-    window.speechSynthesis.speak(utterance);
+    speakNextSentenceAudio(0);
+  }
+}
+
+/**
+ * High-reliability single sentence narrator for stories and kids interaction.
+ * Uses SpeechSynthesis when available, and transparently falls back to streaming audio.
+ */
+export function narrateSentence(
+  text: string,
+  options: {
+    onEnd?: () => void;
+    onError?: (err: any) => void;
+    rate?: number;
+  } = {}
+): () => void {
+  stopTTS();
+  if (!text || !text.trim()) {
+    options.onEnd?.();
+    return () => {};
+  }
+
+  // Clean Quranic brackets, quotes, and punctuation formatting
+  const clean = text
+    .replace(/[{}﴿﴾«»"[\]]/g, '')
+    .replace(/[*_#~]/g, '')
+    .trim();
+
+  let isCancelled = false;
+  let finished = false;
+
+  const handleEnd = () => {
+    if (finished || isCancelled) return;
+    finished = true;
+    options.onEnd?.();
   };
 
-  speakNextSentence(0);
+  const bestVoice = getBestVoice('ar-SA');
+
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window && bestVoice) {
+    try {
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = 'ar-SA';
+      utterance.rate = options.rate ?? 0.92;
+      utterance.pitch = 1.02;
+      utterance.voice = bestVoice;
+
+      let safetyTimeout: any = null;
+
+      utterance.onend = () => {
+        if (safetyTimeout) clearTimeout(safetyTimeout);
+        activeUtterances.delete(utterance);
+        handleEnd();
+      };
+
+      utterance.onerror = (e) => {
+        if (safetyTimeout) clearTimeout(safetyTimeout);
+        activeUtterances.delete(utterance);
+        if (isCancelled || e.error === 'canceled' || e.error === 'interrupted') return;
+        // Fallback to streaming audio
+        playViaAudioStream(clean, handleEnd, options.onError);
+      };
+
+      activeUtterances.add(utterance);
+      window.speechSynthesis.speak(utterance);
+
+      safetyTimeout = setTimeout(() => {
+        if (!finished && !isCancelled && window.speechSynthesis.speaking) {
+          window.speechSynthesis.resume();
+        }
+      }, 12000);
+
+      return () => {
+        isCancelled = true;
+        if (safetyTimeout) clearTimeout(safetyTimeout);
+        stopTTS();
+      };
+    } catch {
+      playViaAudioStream(clean, handleEnd, options.onError);
+      return () => {
+        isCancelled = true;
+        stopTTS();
+      };
+    }
+  } else {
+    playViaAudioStream(clean, handleEnd, options.onError);
+    return () => {
+      isCancelled = true;
+      stopTTS();
+    };
+  }
+}
+
+/**
+ * Stream audio playback fallback using reliable audio/mpeg TTS endpoint
+ */
+function playViaAudioStream(
+  text: string,
+  onEnd?: () => void,
+  onError?: (err: any) => void
+) {
+  try {
+    const trimmed = text.slice(0, 180).trim();
+    const encoded = encodeURIComponent(trimmed);
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=ar&client=tw-ob`;
+    
+    const audio = new Audio(audioUrl);
+    activeAudioElement = audio;
+
+    audio.onended = () => {
+      activeAudioElement = null;
+      onEnd?.();
+    };
+
+    audio.onerror = (e) => {
+      activeAudioElement = null;
+      onError?.(e);
+      setTimeout(() => onEnd?.(), 400);
+    };
+
+    const promise = audio.play();
+    if (promise !== undefined) {
+      promise.catch((err) => {
+        console.warn("Audio stream playback notice:", err?.message || err);
+        activeAudioElement = null;
+        onError?.(err);
+        setTimeout(() => onEnd?.(), 400);
+      });
+    }
+  } catch (err) {
+    console.warn("Audio creation failed:", err);
+    onEnd?.();
+  }
 }
 
 /**

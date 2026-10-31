@@ -79,6 +79,14 @@ export const KidsQuizGame: React.FC<KidsQuizGameProps> = ({ onAddXP }) => {
         </div>
       </div>
 
+      {/* Progress Bar for 50 questions */}
+      <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner p-0.5 border border-slate-100">
+        <div 
+          className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 h-full rounded-full transition-all duration-300 shadow-xs"
+          style={{ width: `${((currentIdx + 1) / KIDS_QUIZ_QUESTIONS.length) * 100}%` }}
+        />
+      </div>
+
       <AnimatePresence mode="wait">
         {!isFinished ? (
           <motion.div
@@ -172,13 +180,17 @@ export const KidsQuizGame: React.FC<KidsQuizGameProps> = ({ onAddXP }) => {
                 مبارك يا بطل! أنهيت المسابقة 🎉
               </h3>
               <p className="text-slate-600 text-sm sm:text-base font-semibold">
-                لقد أجبت بشكل صحيح على <span className="font-black text-amber-600 text-xl">{score}</span> من أصل <span className="font-bold">{KIDS_QUIZ_QUESTIONS.length}</span> أسئلة.
+                لقد أجبت بشكل صحيح على <span className="font-black text-amber-600 text-xl">{score}</span> من أصل <span className="font-bold">{KIDS_QUIZ_QUESTIONS.length}</span> سؤالاً.
               </p>
             </div>
 
             <div className="bg-amber-50 rounded-2xl p-4 sm:p-6 border border-amber-200 max-w-sm mx-auto">
               <div className="text-amber-800 font-black text-lg sm:text-xl mb-1">
-                {score >= 6 ? '🌟 ممتاز! أنت بطل المعرفة الإسلامية' : '👍 أحسنت المحاولة! اقرأ القصص وجرب مرة أخرى'}
+                {score >= 40
+                  ? '🌟 ممتاز جداً! أنت بطل المعرفة الإسلامية الخارق'
+                  : score >= 25
+                  ? '✨ أحسنت عملاً رائعاً ومحاولة مباركة يا بطل!'
+                  : '👍 بداية طيبة! استمع للقصص وجرب مرة أخرى'}
               </div>
               <div className="text-xs sm:text-sm font-bold text-amber-700">
                 +100 نقطة XP أضيفت لرصيدك
