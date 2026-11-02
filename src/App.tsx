@@ -3,12 +3,13 @@ import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 're
 import { 
   BookOpen, BookText, GraduationCap, Baby, Home, 
   Search, Heart, Smartphone, MoreHorizontal, X, 
-  ChevronLeft, Share2, Sparkles, SunMedium
+  ChevronLeft, Share2, Sparkles, SunMedium, Radio
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
 import HomePage from './pages/HomePage';
 import QuranPage from './pages/QuranPage';
+import RadioPage from './pages/RadioPage';
 import EnglishPage from './pages/EnglishPage';
 import StudentsPage from './pages/StudentsPage';
 import KidsPage from './pages/KidsPage';
@@ -21,6 +22,7 @@ function DesktopSidebar() {
   const links = [
     { path: '/', label: 'الرئيسية', icon: <Home size={20} /> },
     { path: '/quran', label: 'القرآن الكريم', icon: <BookOpen size={20} /> },
+    { path: '/radio', label: 'إذاعة القرآن الكريم', icon: <Radio size={20} /> },
     { path: '/azkar', label: 'الأذكار اليومية', icon: <SunMedium size={20} /> },
     { path: '/english', label: 'تعلم الإنجليزية', icon: <BookText size={20} /> },
     { path: '/students', label: 'قسم الطلاب', icon: <GraduationCap size={20} /> },
@@ -101,6 +103,7 @@ function MobileHeader({ onOpenMore }: { onOpenMore: () => void }) {
   const pageTitles: Record<string, string> = {
     '/': 'بوابة إسلام',
     '/quran': 'القرآن الكريم',
+    '/radio': 'إذاعة القرآن الكريم مباشر',
     '/azkar': 'أذكار الصباح والمساء',
     '/english': 'تعلم الإنجليزية',
     '/students': 'قسم الطلاب',
@@ -409,6 +412,24 @@ function MoreDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
           <ChevronLeft size={20} className="rotate-180 text-emerald-200 shrink-0" />
         </a>
 
+        {/* Radio Quick Link */}
+        <Link
+          to="/radio"
+          onClick={onClose}
+          className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-50 border border-rose-200/80 text-[#800020] mb-3 transition active:bg-rose-100"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#800020] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Radio size={20} />
+            </div>
+            <div className="text-right">
+              <p className="font-black text-sm">إذاعة القرآن الكريم (بث مباشر)</p>
+              <p className="text-[11px] text-[#800020]/80">من القاهرة ومكة المكرمة وكبار القراء على مدار ٢٤ ساعة</p>
+            </div>
+          </div>
+          <ChevronLeft size={18} className="rotate-180 text-[#800020]" />
+        </Link>
+
         {/* Memorial Dua */}
         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 mb-4 text-center">
           <p className="text-xs text-slate-500 mb-1 font-bold">دعاء لأخينا المرحوم</p>
@@ -556,6 +577,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/quran" element={<QuranPage />} />
+          <Route path="/radio" element={<RadioPage />} />
           <Route path="/azkar" element={<AzkarPage />} />
           <Route path="/english" element={<EnglishPage />} />
           <Route path="/students" element={<StudentsPage />} />

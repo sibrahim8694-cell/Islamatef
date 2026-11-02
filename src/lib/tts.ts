@@ -448,6 +448,9 @@ function playViaAudioStream(
     const promise = audio.play();
     if (promise !== undefined) {
       promise.catch((err) => {
+        if (err?.name === 'AbortError') {
+          return;
+        }
         console.warn("Audio stream playback notice:", err?.message || err);
         activeAudioElement = null;
         onError?.(err);

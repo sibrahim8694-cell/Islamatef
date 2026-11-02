@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { 
   BookOpen, BookText, GraduationCap, Baby, 
   SunMedium, Sparkles, ChevronLeft, Play, 
-  Smartphone, Heart
+  Smartphone, Heart, Radio
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -17,6 +17,14 @@ export default function HomePage() {
       path: '/quran',
       color: 'from-emerald-500 to-teal-600',
       tag: '١١٤ سورة كاملة'
+    },
+    {
+      title: 'إذاعة القرآن الكريم',
+      desc: 'بث مباشر عالي النقاء لإذاعة القرآن الكريم من القاهرة ومكة المكرمة وكبار القراء 24 ساعة.',
+      icon: <Radio className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />,
+      path: '/radio',
+      color: 'from-[#800020] to-rose-700',
+      tag: 'بث حي ومباشر'
     },
     {
       title: 'أذكار المسلم',
@@ -182,7 +190,7 @@ export default function HomePage() {
             <p className="text-xs text-slate-500">كل الأقسام منظمة ومتاحة مجاناً لوجه الله</p>
           </div>
           <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
-            ٦ أقسام رئيسية
+            ٧ أقسام رئيسية
           </span>
         </div>
 
