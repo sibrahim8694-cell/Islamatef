@@ -1,16 +1,20 @@
 {
-  "name": "صدقة جارية بوابتك للخير",
-  "short_name": "صدقة جارية",
-  "description": "قرآن كريم ومصادر تعليمية",
+  "name": "بوابة إسلام للعلم والإيمان",
+  "short_name": "بوابة إسلام",
+  "description": "بوابة إسلام للعلم والإيمان، منصة إسلامية وتعليمية شاملة صدقة جارية على روح إسلام عاطف حسن.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0ea5e9",
+  "orientation": "portrait",
+  "background_color": "#065f46",
+  "theme_color": "#065f46",
+  "lang": "ar",
+  "dir": "rtl",
   "icons": [
     {
       "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Kaaba_icon.svg/512px-Kaaba_icon.svg.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
