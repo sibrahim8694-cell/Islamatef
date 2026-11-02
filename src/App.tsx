@@ -14,6 +14,7 @@ import EnglishPage from './pages/EnglishPage';
 import StudentsPage from './pages/StudentsPage';
 import KidsPage from './pages/KidsPage';
 import AzkarPage from './pages/AzkarPage';
+import { SplashScreen } from './components/SplashScreen';
 
 const APK_DOWNLOAD_URL = 'https://median.co/share/mbeybbz#apk';
 
@@ -22,7 +23,7 @@ function DesktopSidebar() {
   const links = [
     { path: '/', label: 'الرئيسية', icon: <Home size={20} /> },
     { path: '/quran', label: 'القرآن الكريم', icon: <BookOpen size={20} /> },
-    { path: '/radio', label: 'إذاعة القرآن الكريم', icon: <Radio size={20} /> },
+    { path: '/radio', label: 'إذاعة القرآن الكريم (القاهرة)', icon: <Radio size={20} /> },
     { path: '/azkar', label: 'الأذكار اليومية', icon: <SunMedium size={20} /> },
     { path: '/english', label: 'تعلم الإنجليزية', icon: <BookText size={20} /> },
     { path: '/students', label: 'قسم الطلاب', icon: <GraduationCap size={20} /> },
@@ -571,8 +572,13 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState<boolean>(true);
+
   return (
     <BrowserRouter>
+      {showSplash && (
+        <SplashScreen onFinish={() => setShowSplash(false)} />
+      )}
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />

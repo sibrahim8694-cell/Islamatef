@@ -1,43 +1,45 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Radio, Play, Pause, Volume2, VolumeX, Loader2, 
-  Search, X, Sparkles, Share2, ShieldCheck, Heart, 
-  Headphones, RefreshCw, RadioTower
+  Play, Pause, Volume2, VolumeX, Loader2, 
+  Share2, ShieldCheck, Heart, RadioTower, Sparkles,
+  MapPin, Clock, BookOpen, Mic2, Info, CheckCircle2,
+  RefreshCw, Signal, Award, Headphones
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { RADIO_STATIONS, RADIO_CATEGORIES, RadioStation } from '../data/radioData';
+import { 
+  RADIO_STATIONS, CAIRO_FREQUENCIES, CAIRO_PROGRAMS, 
+  RadioStation 
+} from '../data/radioData';
 
 export default function RadioPage() {
-  const [selectedStation, setSelectedStation] = useState<RadioStation>(RADIO_STATIONS[0]);
+  const station: RadioStation = RADIO_STATIONS[0];
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(0.9);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [hasTriedFallback, setHasTriedFallback] = useState<boolean>(false);
   const [streamHealth, setStreamHealth] = useState<'live' | 'buffering' | 'idle'>('idle');
+  const [activeTab, setActiveTab] = useState<'overview' | 'frequencies' | 'programs'>('overview');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const stallTimerRef = useRef<NodeJS.Timeout | null>(null);
   const playAttemptRef = useRef<number>(0);
   const isSwitchingRef = useRef<boolean>(false);
 
   // Setup MediaSession for background and lock-screen playback
   useEffect(() => {
-    if ('mediaSession' in navigator && selectedStation) {
+    if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: selectedStation.name,
-        artist: 'إذاعة القرآن الكريم بث مباشر',
-        album: selectedStation.subname,
+        title: station.name,
+        artist: 'جمهورية مصر العربية · 98.2 FM',
+        album: 'إذاعة القرآن الكريم من القاهرة',
         artwork: [
           { src: 'https://i.imgur.com/sRBt7lJ.png', sizes: '512x512', type: 'image/png' }
         ]
       });
 
       navigator.mediaSession.setActionHandler('play', () => {
-        handlePlayStation(selectedStation);
+        handlePlay();
       });
       navigator.mediaSession.setActionHandler('pause', () => {
         handlePause();
@@ -46,14 +48,11 @@ export default function RadioPage() {
         handleStop();
       });
     }
-  }, [selectedStation]);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (stallTimerRef.current) {
-        clearTimeout(stallTimerRef.current);
-      }
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.removeAttribute('src');
@@ -61,9 +60,9 @@ export default function RadioPage() {
     };
   }, []);
 
-  const playStreamSafe = async (station: RadioStation, url: string, isFallback: boolean, attemptId: number) => {
+  const playStreamSafe = async (url: string, isFallback: boolean, attemptId: number) => {
     if (!audioRef.current) return;
-    
+
     try {
       audioRef.current.pause();
       audioRef.current.src = url;
@@ -74,7 +73,6 @@ export default function RadioPage() {
         await playPromise;
       }
 
-      // Check if this attempt is still the latest one
       if (attemptId === playAttemptRef.current) {
         setIsPlaying(true);
         setIsLoading(false);
@@ -82,59 +80,52 @@ export default function RadioPage() {
         isSwitchingRef.current = false;
       }
     } catch (err: any) {
-      // Ignore AbortError: happens normally when user switches stations or clicks pause before play resolves
       if (err?.name === 'AbortError') {
-        return;
+        return; // Interrupted by user pause/stop, harmless
       }
 
-      // If another station or attempt was started in the meantime, ignore this error
       if (attemptId !== playAttemptRef.current) {
         return;
       }
 
-      console.warn('Stream playback error:', err?.message || err);
+      console.warn('Cairo stream playback error:', err?.message || err);
 
-      // Attempt fallback once if available
       if (!isFallback && station.fallbackUrl) {
         setHasTriedFallback(true);
-        await playStreamSafe(station, station.fallbackUrl, true, attemptId);
+        await playStreamSafe(station.fallbackUrl, true, attemptId);
         return;
       }
 
-      // Both primary and fallback failed or unavailable
       isSwitchingRef.current = false;
       setIsLoading(false);
       setIsPlaying(false);
       setStreamHealth('idle');
       toast.error('تعذر الاتصال بالبث المباشر حالياً', {
-        description: 'يرجى تجربة إذاعة أخرى أو إعادة المحاولة بعد قليل.'
+        description: 'يرجى التأكد من اتصال الإنترنت وإعادة المحاولة.'
       });
     }
   };
 
-  const handlePlayStation = async (station: RadioStation) => {
+  const handlePlay = async () => {
     if (!audioRef.current) return;
 
-    // Toggle if same station is playing
-    if (selectedStation.id === station.id && isPlaying) {
+    if (isPlaying) {
       handlePause();
       return;
     }
 
     const currentAttempt = ++playAttemptRef.current;
     isSwitchingRef.current = true;
-    setSelectedStation(station);
     setIsLoading(true);
     setStreamHealth('buffering');
     setHasTriedFallback(false);
 
-    await playStreamSafe(station, station.streamUrl, false, currentAttempt);
+    await playStreamSafe(station.streamUrl, false, currentAttempt);
   };
 
   const handlePause = () => {
     playAttemptRef.current++;
     isSwitchingRef.current = false;
-    if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
     if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -146,7 +137,6 @@ export default function RadioPage() {
   const handleStop = () => {
     playAttemptRef.current++;
     isSwitchingRef.current = false;
-    if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.removeAttribute('src');
@@ -181,13 +171,12 @@ export default function RadioPage() {
   };
 
   const handleAudioError = () => {
-    // Ignore if intentional pause or during active programmatic station change
     if (isSwitchingRef.current || !audioRef.current?.src) return;
 
-    if (selectedStation.fallbackUrl && !hasTriedFallback && audioRef.current) {
+    if (station.fallbackUrl && !hasTriedFallback && audioRef.current) {
       setHasTriedFallback(true);
       const attemptId = ++playAttemptRef.current;
-      playStreamSafe(selectedStation, selectedStation.fallbackUrl, true, attemptId);
+      playStreamSafe(station.fallbackUrl, true, attemptId);
       return;
     }
 
@@ -196,50 +185,24 @@ export default function RadioPage() {
     setStreamHealth('idle');
   };
 
-  const handleShareStation = async (station: RadioStation, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: station.name,
-          text: `استمع الآن إلى ${station.name} (${station.subname}) - بوابة إسلام للعلم والإيمان (صدقة جارية)`,
+          text: 'استمع الآن إلى البث المباشر لإذاعة القرآن الكريم من القاهرة (98.2 FM) - بوابة إسلام للعلم والإيمان',
           url: window.location.href
         });
       } catch {}
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success(`تم نسخ رابط ${station.name}`);
+      toast.success('تم نسخ رابط البث المباشر');
     }
   };
 
-  // Filter stations based on search and category
-  const filteredStations = RADIO_STATIONS.filter(s => {
-    const matchesCategory = 
-      activeCategory === 'all' || 
-      (activeCategory === 'cairo' && s.category === 'cairo') ||
-      (activeCategory === 'main' && (s.category === 'main' || s.category === 'cairo')) ||
-      (activeCategory === 'reciters' && s.category === 'reciters') ||
-      (activeCategory === 'programs' && s.category === 'programs') ||
-      (activeCategory === 'azkar' && s.category === 'azkar');
-
-    if (!matchesCategory) return false;
-
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.trim().toLowerCase();
-    return (
-      s.name.toLowerCase().includes(query) ||
-      s.subname.toLowerCase().includes(query) ||
-      s.desc.toLowerCase().includes(query) ||
-      s.country.toLowerCase().includes(query)
-    );
-  });
-
-  const cairoStation = RADIO_STATIONS.find(s => s.id === 'cairo-quran') || RADIO_STATIONS[0];
-  const isCairoPlaying = isPlaying && selectedStation.id === cairoStation.id;
-
   return (
     <div className="space-y-6 sm:space-y-8 pb-32" dir="rtl">
-      {/* Hidden Audio Element with standard HTML5 streaming */}
+      {/* Hidden Audio Element */}
       <audio
         ref={audioRef}
         preload="none"
@@ -263,351 +226,375 @@ export default function RadioPage() {
         onError={handleAudioError}
       />
 
-      {/* Page Title & Mission */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-[#800020] border border-rose-200/80 text-xs font-bold mb-2">
             <RadioTower size={14} className="text-[#800020] animate-pulse" />
-            <span>بث حي ومباشر على مدار ٢٤ ساعة</span>
+            <span>بث مباشر وحصري من جمهورية مصر العربية</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            إذاعة القرآن الكريم
+            إذاعة القرآن الكريم من القاهرة
           </h1>
           <p className="text-slate-500 text-xs sm:text-base mt-1">
-            استمع مباشرة إلى إذاعة القرآن الكريم من القاهرة، مكة المكرمة، وباقة من إذاعات كبار القراء الخالدين بأعلى نقاء صوتي
+            البث الحي الرسمي لأعرق إذاعة قرآنية في العالم · تردد 98.2 FM على مدار ٢٤ ساعة
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span>بث حي متواصل</span>
-          </span>
-        </div>
+        <button
+          onClick={handleShare}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 shadow-xs transition"
+        >
+          <Share2 size={16} className="text-[#800020]" />
+          <span>مشاركة البث</span>
+        </button>
       </div>
 
-      {/* Featured Hero Station: Cairo Quran Radio (إذاعة القرآن الكريم من القاهرة) */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#800020] via-rose-950 to-slate-950 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl border border-rose-900/50">
-        <div className="absolute top-0 left-0 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+      {/* Hero Live Player Card */}
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#800020] via-rose-950 to-slate-950 text-white shadow-2xl border border-rose-900/50 p-6 sm:p-10">
+        {/* Background glow and ornaments */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex-1 text-center md:text-right">
-            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap mb-2.5">
-              <span className="bg-rose-500/20 text-rose-200 border border-rose-400/30 px-3 py-0.5 rounded-full text-xs font-bold">
-                🇪🇬 الإذاعة الأم · جمهورية مصر العربية
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+          {/* Radio Info & Status */}
+          <div className="space-y-4 text-center lg:text-right max-w-xl">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-bold text-amber-300">
+                🇪🇬 مصر · القاهرة
               </span>
-              <span className="bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full text-xs font-black shadow-xs">
-                98.2 FM
+              <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-200 text-xs font-bold border border-rose-400/30">
+                التردد الرئيسي: 98.2 FM
               </span>
-              <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2.5 py-0.5 rounded-full text-xs font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>على الهواء مباشرة</span>
+              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30 flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'}`} />
+                <span>{isPlaying ? 'البث المباشر نشط الآن' : 'بث مباشر ٢٤ ساعة'}</span>
               </span>
             </div>
 
-            <h2 className="text-xl sm:text-3xl md:text-4xl font-black mb-2 text-white">
-              {cairoStation.name}
+            <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight">
+              إذاعة القرآن الكريم <span className="text-amber-300">من القاهرة</span>
             </h2>
-            <p className="text-rose-100 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl font-medium mb-5">
-              {cairoStation.desc}
+
+            <p className="text-rose-100/90 text-sm sm:text-base leading-relaxed">
+              هنا القاهرة.. إذاعة القرآن الكريم من جمهورية مصر العربية، أقدم وأعرق إذاعة متخصصة في تلاوة القرآن الكريم وتفسيره وبرامج السنة النبوية الشريفة منذ عام 1964م.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <button
-                onClick={() => handlePlayStation(cairoStation)}
-                className="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black px-6 sm:px-8 py-3 sm:py-3.5 rounded-2xl text-xs sm:text-sm md:text-base shadow-lg shadow-amber-500/25 transition-all flex items-center gap-2.5 touch-press"
-              >
-                {isLoading && selectedStation.id === cairoStation.id ? (
-                  <Loader2 size={20} className="animate-spin text-slate-950" />
-                ) : isCairoPlaying ? (
-                  <>
-                    <Pause size={20} className="fill-current" />
-                    <span>إيقاف البث مؤقتاً</span>
-                  </>
-                ) : (
-                  <>
-                    <Play size={20} className="fill-current" />
-                    <span>تشغيل إذاعة القاهرة الآن</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={(e) => handleShareStation(cairoStation, e)}
-                className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-3 rounded-2xl text-xs sm:text-sm border border-white/20 transition flex items-center gap-2"
-                title="مشاركة إذاعة القاهرة"
-              >
-                <Share2 size={16} />
-                <span>مشاركة</span>
-              </button>
+            {/* Audio Wave Visualizer */}
+            <div className="flex items-center justify-center lg:justify-start gap-1.5 h-10 py-2">
+              {[40, 70, 30, 90, 60, 100, 45, 80, 65, 95, 50, 85, 35, 75, 55, 90].map((h, i) => (
+                <motion.div
+                  key={i}
+                  animate={isPlaying ? {
+                    height: [`${h * 0.25}%`, `${h}%`, `${h * 0.4}%`, `${h * 0.85}%`],
+                  } : { height: '16%' }}
+                  transition={isPlaying ? {
+                    duration: 0.9 + (i % 4) * 0.2,
+                    repeat: Infinity,
+                    repeatType: 'reverse',
+                    ease: 'easeInOut'
+                  } : { duration: 0.3 }}
+                  className="w-1 sm:w-1.5 rounded-full bg-gradient-to-t from-amber-400 to-rose-300 origin-bottom"
+                />
+              ))}
+              <span className="text-xs text-rose-200 mr-2 font-mono">
+                {isPlaying ? (streamHealth === 'buffering' ? 'جاري الضبط...' : 'LIVE 98.2 FM') : 'جاهز للتشغيل'}
+              </span>
             </div>
           </div>
 
-          {/* Retro-Modern Animated Radio Visualizer Card */}
-          <div className="w-full md:w-auto flex flex-col items-center justify-center">
-            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col items-center justify-center p-4 shadow-inner relative group">
-              {isCairoPlaying ? (
-                <div className="flex items-end justify-center gap-1.5 h-16 w-full">
-                  {[40, 70, 100, 60, 90, 50, 80].map((h, i) => (
-                    <motion.span
-                      key={i}
-                      animate={{ height: [`${Math.max(15, h * 0.3)}%`, `${h}%`, `${Math.max(20, h * 0.5)}%`] }}
-                      transition={{ duration: 0.6 + i * 0.1, repeat: Infinity, ease: 'easeInOut' }}
-                      className="w-2 rounded-full bg-gradient-to-t from-amber-400 to-rose-300 shadow-xs"
-                    />
-                  ))}
-                </div>
+          {/* Player Controls Hub */}
+          <div className="flex flex-col items-center gap-4 bg-black/30 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/10 w-full sm:w-80 shadow-inner">
+            <button
+              onClick={handlePlay}
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 hover:from-amber-400 hover:to-yellow-200 text-slate-950 flex items-center justify-center shadow-xl shadow-amber-500/30 transition-all transform hover:scale-105 active:scale-95 touch-press"
+              title={isPlaying ? 'إيقاف البث مؤقتاً' : 'تشغيل إذاعة القرآن الكريم'}
+            >
+              {isLoading ? (
+                <Loader2 size={36} className="animate-spin text-slate-950" />
+              ) : isPlaying ? (
+                <Pause size={36} className="fill-current" />
               ) : (
-                <Radio size={48} className="text-rose-200 group-hover:scale-110 transition-transform" />
+                <Play size={36} className="fill-current mr-1" />
               )}
-              <span className="text-[11px] font-bold text-rose-200 mt-2">
-                {isCairoPlaying ? 'جاري البث الحي 🟢' : 'انقر للتشغيل'}
+            </button>
+
+            <div className="text-center">
+              <span className="text-sm font-bold text-white block">
+                {isLoading ? 'جاري الاتصال بالأثير...' : isPlaying ? 'استماع مباشر' : 'اضغط للاستماع للبث الحي'}
+              </span>
+              <span className="text-[11px] text-rose-200/80">
+                جودة صوتية نقية مباشرة بدون تقطيع
+              </span>
+            </div>
+
+            {/* Volume & Mute */}
+            <div className="w-full flex items-center gap-3 pt-2 border-t border-white/10">
+              <button
+                onClick={toggleMute}
+                className="text-rose-200 hover:text-white p-1 rounded-lg transition"
+                title={isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}
+              >
+                {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={isMuted ? 0 : volume}
+                onChange={handleVolumeChange}
+                className="w-full accent-amber-400 h-1.5 rounded-full cursor-pointer"
+                aria-label="مستوى الصوت"
+              />
+              <span className="text-[11px] text-rose-200 font-mono w-8 text-left">
+                {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Search and Category Filter Toolbar */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-xs space-y-4">
-        {/* Search Bar */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="ابحث عن إذاعة باسم الشيخ أو الدولة أو الموضوع (مثال: القاهرة، عبد الباسط، تفسير، رقية)..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-11 pl-10 py-3 sm:py-3.5 focus:outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20 font-medium text-slate-800 text-xs sm:text-sm"
-          />
-          <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
+      {/* Tabs: Overview, Egyptian Frequencies, Iconic Programs */}
+      <div className="flex border-b border-slate-200/80 gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition whitespace-nowrap ${
+            activeTab === 'overview'
+              ? 'bg-[#800020] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Sparkles size={16} />
+          <span>عن الإذاعة وأعلامها</span>
+        </button>
 
-        {/* Category Pills (Horizontal Scrollable on Mobile) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 hide-scrollbar">
-          {RADIO_CATEGORIES.map(cat => {
-            const isActive = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
-                  isActive
-                    ? 'bg-[#800020] text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-700 hover:bg-rose-50 hover:text-[#800020] border border-slate-200/80'
-                }`}
-              >
-                <span>{cat.label}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
-                }`}>
-                  {cat.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <button
+          onClick={() => setActiveTab('frequencies')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition whitespace-nowrap ${
+            activeTab === 'frequencies'
+              ? 'bg-[#800020] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <MapPin size={16} />
+          <span>ترددات الإذاعة في محافظات مصر ({CAIRO_FREQUENCIES.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('programs')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition whitespace-nowrap ${
+            activeTab === 'programs'
+              ? 'bg-[#800020] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <BookOpen size={16} />
+          <span>البرامج التاريخية والتلاوات</span>
+        </button>
       </div>
 
-      {/* Stations Grid: 2 columns on mobile facing each other, 3 on md, 4 on lg */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
-        {filteredStations.map(station => {
-          const isSelected = selectedStation.id === station.id;
-          const isThisPlaying = isSelected && isPlaying;
-          const isThisLoading = isSelected && isLoading;
-
-          return (
-            <motion.div
-              layout
-              key={station.id}
-              onClick={() => handlePlayStation(station)}
-              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between gap-3 group transition-all duration-300 relative overflow-hidden ${
-                isSelected
-                  ? 'border-[#800020] bg-rose-50/60 ring-2 ring-[#800020]/20'
-                  : 'border-slate-200/90 bg-white hover:border-[#800020]/40'
-              }`}
-            >
-              {/* Top Row: Country Badge + Live status */}
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 truncate">
-                  {station.countryBadge}
-                </span>
-
-                {isThisPlaying ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping" />
-                    <span>مباشر</span>
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-semibold text-slate-400">
-                    {station.frequency || 'بث 24س'}
-                  </span>
-                )}
+      {/* Tab Content: Overview */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#800020] flex items-center justify-center">
+                <RadioTower size={20} />
               </div>
+              <h3 className="text-base font-black text-slate-800">التأسيس العريق (1964م)</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                انطلق أول بث لإذاعة القرآن الكريم من القاهرة في 25 مارس 1964م، لتكون أول وأقدم إذاعة قرآنية في العالم لحفظ كتاب الله وتلاوته.
+              </p>
+            </div>
 
-              {/* Station Info */}
-              <div className="min-w-0 flex-1">
-                <h3 className={`text-xs sm:text-base font-black leading-snug line-clamp-2 ${
-                  isSelected ? 'text-[#800020]' : 'text-slate-800 group-hover:text-[#800020]'
-                }`}>
-                  {station.name}
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                <Mic2 size={20} />
+              </div>
+              <h3 className="text-base font-black text-slate-800">دولة التلاوة المصرية</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                تصدح الإذاعة بتسجيلات المصحف المرتل والمجود لأعظم قراء التاريخ: الشيخ محمود خليل الحصري، عبد الباسط عبد الصمد، محمد صديق المنشاوي، مصطفى إسماعيل، ومحمود علي البنا.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-2 sm:col-span-2 lg:col-span-1">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <ShieldCheck size={20} />
+              </div>
+              <h3 className="text-base font-black text-slate-800">المرجعية الأزهرية المعتمدة</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                تعتمد الإذاعة المنهج الأزهري الوسطي السمح في كافة برامجها وتفاسيرها، وتقدم إجابات فتاوى موثقة لكبار علماء الأمة الإسلامية.
+              </p>
+            </div>
+          </div>
+
+          {/* Reciters Honor Grid (2 columns on mobile) */}
+          <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/80 shadow-xs">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-lg sm:text-xl font-black text-slate-900">
+                  أعلام الإذاعة المصرية الخالدين
                 </h3>
-                <p className="text-[10px] sm:text-xs text-slate-500 font-medium line-clamp-1 mt-1">
-                  {station.subname}
+                <p className="text-xs text-slate-500 mt-0.5">
+                  أصوات مباركة شرفت أثير إذاعة القرآن الكريم من القاهرة عبر العقود
                 </p>
               </div>
+              <Award className="text-amber-500" size={24} />
+            </div>
 
-              {/* Bottom Controls Row */}
-              <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePlayStation(station);
-                  }}
-                  className={`flex-1 h-7 sm:h-8.5 flex items-center justify-center gap-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-black transition-all ${
-                    isThisPlaying
-                      ? 'bg-[#800020] text-white shadow-xs'
-                      : 'bg-rose-50 text-[#800020] hover:bg-rose-100 border border-rose-200/70'
-                  }`}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[
+                { name: 'الشيخ محمود خليل الحصري', role: 'شيخ عموم المقارئ · صاحب أول مصحف مرتل' },
+                { name: 'الشيخ عبد الباسط عبد الصمد', role: 'صوت مكة · الحنجرة الذهبية' },
+                { name: 'الشيخ محمد صديق المنشاوي', role: 'الصوت الباكي الخاشع' },
+                { name: 'الشيخ مصطفى إسماعيل', role: 'أمير القراء والمقامات القرآنية' },
+                { name: 'الشيخ محمود علي البنا', role: 'صاحب النبرة الرخيمة المؤثرة' },
+                { name: 'الشيخ محمد محمود الطبلاوي', role: 'نقيب القراء السابق' },
+                { name: 'الشيخ أحمد نعينع', role: 'قارئ الإذاعة المصرية والرئاسة' },
+                { name: 'الشيخ محمد متولي الشعراوي', role: 'إمام الدعاة وخواطر التفسير' },
+              ].map((reciter, idx) => (
+                <div 
+                  key={idx}
+                  className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 hover:border-rose-300 transition text-right"
                 >
-                  {isThisLoading ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : isThisPlaying ? (
-                    <>
-                      <Pause size={13} className="fill-current" />
-                      <span>إيقاف</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play size={13} className="fill-current ml-0.5" />
-                      <span>استماع</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={(e) => handleShareStation(station, e)}
-                  title="مشاركة الإذاعة"
-                  className="w-7 h-7 sm:w-8.5 sm:h-8.5 rounded-lg sm:rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center border border-slate-200/70 shrink-0 transition"
-                >
-                  <Share2 size={13} />
-                </button>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Empty State */}
-      {filteredStations.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 p-6">
-          <Radio size={40} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-slate-700 font-bold text-base">لم يتم العثور على إذاعة تطابق "{searchQuery}"</p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setActiveCategory('all');
-            }}
-            className="mt-3 px-4 py-2 bg-[#800020] text-white text-xs font-bold rounded-xl"
-          >
-            إعادة عرض جميع الإذاعات
-          </button>
+                  <span className="text-xs font-black text-slate-900 block mb-1">
+                    {reciter.name}
+                  </span>
+                  <span className="text-[11px] text-slate-500 leading-tight block">
+                    {reciter.role}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Floating Live Radio Docked Player (Bottom of Screen) */}
+      {/* Tab Content: Egyptian Governorates Frequencies */}
+      {activeTab === 'frequencies' && (
+        <div className="space-y-4">
+          <div className="bg-rose-50 border border-rose-200/70 rounded-2xl p-4 text-right">
+            <p className="text-xs sm:text-sm font-bold text-[#800020]">
+              📻 استمع لإذاعة القرآن الكريم من القاهرة عبر أجهزة الراديو في سيارتك أو منزلك بترددات الـ FM في جميع المحافظات:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {CAIRO_FREQUENCIES.map((freq, idx) => (
+              <div 
+                key={idx}
+                className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between gap-3 text-right hover:border-rose-300 transition"
+              >
+                <div>
+                  <span className="text-xs font-bold text-slate-400 block mb-0.5">
+                    {freq.region}
+                  </span>
+                  <h4 className="text-xs sm:text-sm font-black text-slate-800">
+                    {freq.city}
+                  </h4>
+                </div>
+                <div className="bg-[#800020] text-white px-2.5 py-1.5 rounded-xl font-mono font-bold text-xs sm:text-sm tracking-wide shrink-0 shadow-xs">
+                  {freq.freq}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab Content: Iconic Programs */}
+      {activeTab === 'programs' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {CAIRO_PROGRAMS.map((prog, idx) => (
+            <div 
+              key={idx}
+              className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-2 text-right hover:border-rose-300 transition"
+            >
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-[#800020] border border-rose-200 text-[10px] font-bold">
+                  {prog.timeSlot}
+                </span>
+                <Clock size={14} className="text-slate-400" />
+              </div>
+              <h3 className="text-base font-black text-slate-900">
+                {prog.title}
+              </h3>
+              <p className="text-xs font-bold text-rose-800">
+                تقديم: {prog.broadcaster}
+              </p>
+              <p className="text-xs text-slate-500 leading-relaxed pt-1">
+                {prog.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Docked Floating Bottom Player (appears when playing or active) */}
       <AnimatePresence>
         {isPlaying && (
           <motion.div
-            initial={{ y: 80, opacity: 0 }}
+            initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="fixed bottom-[64px] lg:bottom-6 left-2 right-2 sm:left-4 sm:right-4 lg:left-1/2 lg:-translate-x-1/2 lg:w-full lg:max-w-3xl bg-slate-900/95 backdrop-blur-xl text-white rounded-2xl shadow-2xl border border-slate-700/90 z-40 overflow-hidden"
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed bottom-16 lg:bottom-4 left-3 right-3 sm:left-6 sm:right-6 max-w-4xl mx-auto z-40 bg-slate-900/95 backdrop-blur-xl border border-white/10 text-white p-3 sm:p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3"
           >
-            {/* Top Micro Live Pulse Line */}
-            <div className="w-full bg-slate-800 h-1 relative overflow-hidden">
-              <motion.div 
-                animate={{ x: ['-100%', '100%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                className="w-1/3 h-full bg-gradient-to-r from-transparent via-[#800020] to-rose-400"
-              />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#800020] text-white flex items-center justify-center shrink-0 shadow-md">
+                <RadioTower size={20} className="animate-pulse" />
+              </div>
+              <div className="truncate text-right">
+                <h4 className="text-xs sm:text-sm font-black truncate">
+                  إذاعة القرآن الكريم من القاهرة
+                </h4>
+                <p className="text-[11px] text-amber-300 truncate">
+                  بث مباشر · 98.2 FM · مصر 🇪🇬
+                </p>
+              </div>
             </div>
 
-            <div className="p-3 sm:p-4 flex items-center justify-between gap-3">
-              {/* Station Info & Equalizer */}
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
-                  <Radio size={20} className="animate-pulse" />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                    <span className="text-xs sm:text-sm font-black text-white truncate">
-                      {selectedStation.name}
-                    </span>
-                  </div>
-                  <span className="text-[10px] sm:text-xs text-rose-300 font-bold truncate">
-                    {selectedStation.subname}
-                  </span>
-                </div>
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              <div className="hidden sm:flex items-center gap-2">
+                <button
+                  onClick={toggleMute}
+                  className="text-slate-400 hover:text-white p-1"
+                >
+                  {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  className="w-16 accent-[#800020] h-1.5 rounded-full cursor-pointer"
+                />
               </div>
 
-              {/* Controls */}
-              <div className="flex items-center gap-2 shrink-0">
-                {/* Volume Slider (hidden on extra small) */}
-                <div className="hidden sm:flex items-center gap-2 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700">
-                  <button 
-                    onClick={toggleMute}
-                    className="text-slate-400 hover:text-white transition"
-                    title={isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}
-                  >
-                    {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={isMuted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                    className="w-16 accent-[#800020] h-1.5 rounded-full cursor-pointer"
-                    aria-label="مستوى الصوت"
-                  />
-                </div>
+              <button
+                onClick={handlePlay}
+                className="w-10 h-10 bg-[#800020] hover:bg-[#9c0027] rounded-full flex items-center justify-center text-white transition active:scale-95 shadow-md"
+                title={isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
+              >
+                {isLoading ? (
+                  <Loader2 size={18} className="animate-spin text-white" />
+                ) : isPlaying ? (
+                  <Pause size={18} className="fill-current" />
+                ) : (
+                  <Play size={18} className="fill-current mr-0.5" />
+                )}
+              </button>
 
-                {/* Big Play / Pause */}
-                <button
-                  onClick={() => handlePlayStation(selectedStation)}
-                  className="w-11 h-11 bg-[#800020] hover:bg-[#9c0027] rounded-full flex items-center justify-center text-white transition transform active:scale-95 shadow-md shadow-[#800020]/30 touch-press"
-                  title={isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
-                >
-                  {isLoading ? (
-                    <Loader2 size={20} className="animate-spin text-white" />
-                  ) : isPlaying ? (
-                    <Pause size={20} className="fill-current" />
-                  ) : (
-                    <Play size={20} className="fill-current mr-0.5" />
-                  )}
-                </button>
-
-                {/* Close Player */}
-                <button
-                  onClick={handleStop}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-white/5 transition"
-                  title="إغلاق البث"
-                >
-                  <X size={18} />
-                </button>
-              </div>
+              <button
+                onClick={handleStop}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-400 transition"
+                title="إغلاق البث"
+              >
+                <RefreshCw size={16} />
+              </button>
             </div>
           </motion.div>
         )}
