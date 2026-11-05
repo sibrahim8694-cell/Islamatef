@@ -1,196 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Play, Pause, Volume2, VolumeX, Loader2, 
-  Share2, ShieldCheck, Heart, RadioTower, Sparkles,
-  MapPin, Clock, BookOpen, Mic2, Info, CheckCircle2,
-  RefreshCw, Signal, Award, Headphones
+  Share2, ShieldCheck, RadioTower, Sparkles,
+  MapPin, Clock, BookOpen, Mic2,
+  RefreshCw, Award, Server
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { 
   RADIO_STATIONS, CAIRO_FREQUENCIES, CAIRO_PROGRAMS, 
-  RadioStation 
+  CAIRO_STREAM_SERVERS, RadioStation 
 } from '../data/radioData';
+import { useGlobalAudio } from '../context/GlobalAudioContext';
 
 export default function RadioPage() {
   const station: RadioStation = RADIO_STATIONS[0];
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(0.9);
-  const [hasTriedFallback, setHasTriedFallback] = useState<boolean>(false);
-  const [streamHealth, setStreamHealth] = useState<'live' | 'buffering' | 'idle'>('idle');
-  const [activeTab, setActiveTab] = useState<'overview' | 'frequencies' | 'programs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'frequencies' | 'programs' | 'servers'>('overview');
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const playAttemptRef = useRef<number>(0);
-  const isSwitchingRef = useRef<boolean>(false);
-
-  // Setup MediaSession for background and lock-screen playback
-  useEffect(() => {
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: station.name,
-        artist: 'جمهورية مصر العربية · 98.2 FM',
-        album: 'إذاعة القرآن الكريم من القاهرة',
-        artwork: [
-          { src: 'https://i.imgur.com/sRBt7lJ.png', sizes: '512x512', type: 'image/png' }
-        ]
-      });
-
-      navigator.mediaSession.setActionHandler('play', () => {
-        handlePlay();
-      });
-      navigator.mediaSession.setActionHandler('pause', () => {
-        handlePause();
-      });
-      navigator.mediaSession.setActionHandler('stop', () => {
-        handleStop();
-      });
-    }
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeAttribute('src');
-      }
-    };
-  }, []);
-
-  const playStreamSafe = async (url: string, isFallback: boolean, attemptId: number) => {
-    if (!audioRef.current) return;
-
-    try {
-      audioRef.current.pause();
-      audioRef.current.src = url;
-      audioRef.current.load();
-
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        await playPromise;
-      }
-
-      if (attemptId === playAttemptRef.current) {
-        setIsPlaying(true);
-        setIsLoading(false);
-        setStreamHealth('live');
-        isSwitchingRef.current = false;
-      }
-    } catch (err: any) {
-      if (err?.name === 'AbortError') {
-        return; // Interrupted by user pause/stop, harmless
-      }
-
-      if (attemptId !== playAttemptRef.current) {
-        return;
-      }
-
-      console.warn('Cairo stream playback error:', err?.message || err);
-
-      if (!isFallback && station.fallbackUrl) {
-        setHasTriedFallback(true);
-        await playStreamSafe(station.fallbackUrl, true, attemptId);
-        return;
-      }
-
-      isSwitchingRef.current = false;
-      setIsLoading(false);
-      setIsPlaying(false);
-      setStreamHealth('idle');
-      toast.error('تعذر الاتصال بالبث المباشر حالياً', {
-        description: 'يرجى التأكد من اتصال الإنترنت وإعادة المحاولة.'
-      });
-    }
-  };
-
-  const handlePlay = async () => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      handlePause();
-      return;
-    }
-
-    const currentAttempt = ++playAttemptRef.current;
-    isSwitchingRef.current = true;
-    setIsLoading(true);
-    setStreamHealth('buffering');
-    setHasTriedFallback(false);
-
-    await playStreamSafe(station.streamUrl, false, currentAttempt);
-  };
-
-  const handlePause = () => {
-    playAttemptRef.current++;
-    isSwitchingRef.current = false;
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    setIsPlaying(false);
-    setIsLoading(false);
-    setStreamHealth('idle');
-  };
-
-  const handleStop = () => {
-    playAttemptRef.current++;
-    isSwitchingRef.current = false;
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.removeAttribute('src');
-      audioRef.current.load();
-    }
-    setIsPlaying(false);
-    setIsLoading(false);
-    setStreamHealth('idle');
-  };
-
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    setVolume(val);
-    if (audioRef.current) {
-      audioRef.current.volume = val;
-      if (val === 0) {
-        setIsMuted(true);
-        audioRef.current.muted = true;
-      } else if (isMuted) {
-        setIsMuted(false);
-        audioRef.current.muted = false;
-      }
-    }
-  };
-
-  const toggleMute = () => {
-    if (audioRef.current) {
-      const nextMute = !isMuted;
-      audioRef.current.muted = nextMute;
-      setIsMuted(nextMute);
-    }
-  };
-
-  const handleAudioError = () => {
-    if (isSwitchingRef.current || !audioRef.current?.src) return;
-
-    if (station.fallbackUrl && !hasTriedFallback && audioRef.current) {
-      setHasTriedFallback(true);
-      const attemptId = ++playAttemptRef.current;
-      playStreamSafe(station.fallbackUrl, true, attemptId);
-      return;
-    }
-
-    setIsPlaying(false);
-    setIsLoading(false);
-    setStreamHealth('idle');
-  };
+  const {
+    isRadioPlaying,
+    isRadioLoading,
+    isRadioMuted,
+    radioVolume,
+    radioStreamHealth,
+    activeRadioServer,
+    toggleRadio,
+    stopRadio,
+    setRadioVolume,
+    toggleRadioMute,
+    switchRadioServer,
+    reconnectRadio
+  } = useGlobalAudio();
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: station.name,
-          text: 'استمع الآن إلى البث المباشر لإذاعة القرآن الكريم من القاهرة (98.2 FM) - بوابة إسلام للعلم والإيمان',
+          text: 'استمع الآن إلى البث المباشر لإذاعة القرآن الكريم من القاهرة (98.2 FM) - بوابة إسلام للعلم والإيمان (صدقة جارية)',
           url: window.location.href
         });
       } catch {}
@@ -201,31 +48,7 @@ export default function RadioPage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-32" dir="rtl">
-      {/* Hidden Audio Element */}
-      <audio
-        ref={audioRef}
-        preload="none"
-        onWaiting={() => {
-          setIsLoading(true);
-          setStreamHealth('buffering');
-        }}
-        onCanPlay={() => {
-          setIsLoading(false);
-          setStreamHealth('live');
-        }}
-        onPlaying={() => {
-          setIsLoading(false);
-          setIsPlaying(true);
-          setStreamHealth('live');
-        }}
-        onStalled={() => {
-          if (!isPlaying) return;
-          setStreamHealth('buffering');
-        }}
-        onError={handleAudioError}
-      />
-
+    <div className="space-y-6 sm:space-y-8 pb-32 select-none" dir="rtl">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
@@ -237,17 +60,28 @@ export default function RadioPage() {
             إذاعة القرآن الكريم من القاهرة
           </h1>
           <p className="text-slate-500 text-xs sm:text-base mt-1">
-            البث الحي الرسمي لأعرق إذاعة قرآنية في العالم · تردد 98.2 FM على مدار ٢٤ ساعة
+            البث الحي الرسمي لأعرق إذاعة قرآنية في العالم · تردد 98.2 FM يعمل في الخلفية ودون انقطاع
           </p>
         </div>
 
-        <button
-          onClick={handleShare}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 shadow-xs transition"
-        >
-          <Share2 size={16} className="text-[#800020]" />
-          <span>مشاركة البث</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={reconnectRadio}
+            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 shadow-xs transition"
+            title="إعادة ضبط الاتصال بالأثير"
+          >
+            <RefreshCw size={15} className={`text-slate-600 ${isRadioLoading ? 'animate-spin' : ''}`} />
+            <span>تحديث البث</span>
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#800020] hover:bg-[#66001a] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition"
+          >
+            <Share2 size={15} />
+            <span>مشاركة البث</span>
+          </button>
+        </div>
       </div>
 
       {/* Hero Live Player Card */}
@@ -264,11 +98,15 @@ export default function RadioPage() {
                 🇪🇬 مصر · القاهرة
               </span>
               <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-200 text-xs font-bold border border-rose-400/30">
-                التردد الرئيسي: 98.2 FM
+                التردد: 98.2 FM
               </span>
               <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30 flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'}`} />
-                <span>{isPlaying ? 'البث المباشر نشط الآن' : 'بث مباشر ٢٤ ساعة'}</span>
+                <span className={`w-2 h-2 rounded-full ${isRadioPlaying ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'}`} />
+                <span>
+                  {isRadioPlaying 
+                    ? (radioStreamHealth === 'buffering' ? 'جاري ضبط التردد...' : 'البث المباشر نشط الآن') 
+                    : 'بث مستمر بدون تقطيع'}
+                </span>
               </span>
             </div>
 
@@ -280,15 +118,21 @@ export default function RadioPage() {
               هنا القاهرة.. إذاعة القرآن الكريم من جمهورية مصر العربية، أقدم وأعرق إذاعة متخصصة في تلاوة القرآن الكريم وتفسيره وبرامج السنة النبوية الشريفة منذ عام 1964م.
             </p>
 
+            {/* Active Server indicator banner */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-xs text-amber-200">
+              <Server size={14} className="text-amber-400" />
+              <span>السيرفر المتصل: {activeRadioServer.name}</span>
+            </div>
+
             {/* Audio Wave Visualizer */}
             <div className="flex items-center justify-center lg:justify-start gap-1.5 h-10 py-2">
               {[40, 70, 30, 90, 60, 100, 45, 80, 65, 95, 50, 85, 35, 75, 55, 90].map((h, i) => (
                 <motion.div
                   key={i}
-                  animate={isPlaying ? {
+                  animate={isRadioPlaying ? {
                     height: [`${h * 0.25}%`, `${h}%`, `${h * 0.4}%`, `${h * 0.85}%`],
                   } : { height: '16%' }}
-                  transition={isPlaying ? {
+                  transition={isRadioPlaying ? {
                     duration: 0.9 + (i % 4) * 0.2,
                     repeat: Infinity,
                     repeatType: 'reverse',
@@ -298,7 +142,7 @@ export default function RadioPage() {
                 />
               ))}
               <span className="text-xs text-rose-200 mr-2 font-mono">
-                {isPlaying ? (streamHealth === 'buffering' ? 'جاري الضبط...' : 'LIVE 98.2 FM') : 'جاهز للتشغيل'}
+                {isRadioPlaying ? (radioStreamHealth === 'buffering' ? 'ضبط التردد...' : 'LIVE 98.2 FM') : 'جاهز للتشغيل'}
               </span>
             </div>
           </div>
@@ -306,13 +150,13 @@ export default function RadioPage() {
           {/* Player Controls Hub */}
           <div className="flex flex-col items-center gap-4 bg-black/30 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/10 w-full sm:w-80 shadow-inner">
             <button
-              onClick={handlePlay}
+              onClick={toggleRadio}
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 hover:from-amber-400 hover:to-yellow-200 text-slate-950 flex items-center justify-center shadow-xl shadow-amber-500/30 transition-all transform hover:scale-105 active:scale-95 touch-press"
-              title={isPlaying ? 'إيقاف البث مؤقتاً' : 'تشغيل إذاعة القرآن الكريم'}
+              title={isRadioPlaying ? 'إيقاف البث مؤقتاً' : 'تشغيل إذاعة القرآن الكريم'}
             >
-              {isLoading ? (
+              {isRadioLoading ? (
                 <Loader2 size={36} className="animate-spin text-slate-950" />
-              ) : isPlaying ? (
+              ) : isRadioPlaying ? (
                 <Pause size={36} className="fill-current" />
               ) : (
                 <Play size={36} className="fill-current mr-1" />
@@ -321,41 +165,41 @@ export default function RadioPage() {
 
             <div className="text-center">
               <span className="text-sm font-bold text-white block">
-                {isLoading ? 'جاري الاتصال بالأثير...' : isPlaying ? 'استماع مباشر' : 'اضغط للاستماع للبث الحي'}
+                {isRadioLoading ? 'جاري الاتصال بالأثير...' : isRadioPlaying ? 'استماع مباشر' : 'اضغط للاستماع للبث الحي'}
               </span>
               <span className="text-[11px] text-rose-200/80">
-                جودة صوتية نقية مباشرة بدون تقطيع
+                يعمل في الخلفية وعند قفل الشاشة
               </span>
             </div>
 
             {/* Volume & Mute */}
             <div className="w-full flex items-center gap-3 pt-2 border-t border-white/10">
               <button
-                onClick={toggleMute}
+                onClick={toggleRadioMute}
                 className="text-rose-200 hover:text-white p-1 rounded-lg transition"
-                title={isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}
+                title={isRadioMuted ? 'إلغاء الكتم' : 'كتم الصوت'}
               >
-                {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                {isRadioMuted || radioVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
               </button>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.05"
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
+                value={isRadioMuted ? 0 : radioVolume}
+                onChange={(e) => setRadioVolume(parseFloat(e.target.value))}
                 className="w-full accent-amber-400 h-1.5 rounded-full cursor-pointer"
                 aria-label="مستوى الصوت"
               />
               <span className="text-[11px] text-rose-200 font-mono w-8 text-left">
-                {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
+                {isRadioMuted ? '0%' : `${Math.round(radioVolume * 100)}%`}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs: Overview, Egyptian Frequencies, Iconic Programs */}
+      {/* Tabs: Overview, Egyptian Frequencies, Iconic Programs, Stream Servers */}
       <div className="flex border-b border-slate-200/80 gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button
           onClick={() => setActiveTab('overview')}
@@ -391,6 +235,18 @@ export default function RadioPage() {
         >
           <BookOpen size={16} />
           <span>البرامج التاريخية والتلاوات</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('servers')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition whitespace-nowrap ${
+            activeTab === 'servers'
+              ? 'bg-[#800020] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Server size={16} />
+          <span>سيرفرات البث المتعددة ({CAIRO_STREAM_SERVERS.length})</span>
         </button>
       </div>
 
@@ -531,9 +387,66 @@ export default function RadioPage() {
         </div>
       )}
 
-      {/* Docked Floating Bottom Player (appears when playing or active) */}
+      {/* Tab Content: Stream Servers & Resilience */}
+      {activeTab === 'servers' && (
+        <div className="space-y-4">
+          <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 text-right">
+            <p className="text-xs sm:text-sm font-bold text-emerald-900">
+              ⚡ نظام الحماية من التقطيع التلقائي: في حال حدوث ضعف في شبكة الهاتف أو انقطاع في الأثير، يقوم التطبيق تلقائياً بإعادة الاتصال أو الانتقال إلى السيرفر الاحتياطي دون توقف الصوت.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {CAIRO_STREAM_SERVERS.map((srv) => {
+              const isActive = activeRadioServer.id === srv.id;
+              return (
+                <div 
+                  key={srv.id}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    isActive 
+                      ? 'bg-rose-50/80 border-[#800020] ring-2 ring-[#800020]/20' 
+                      : 'bg-white border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      isActive ? 'bg-[#800020] text-white shadow-xs' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      <Server size={20} />
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-800 text-sm">{srv.name}</span>
+                        {isActive && (
+                          <span className="px-2 py-0.5 rounded-full bg-[#800020] text-white text-[10px] font-bold">
+                            نشط حالياً
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-slate-400 font-mono">{srv.bitrate}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => switchRadioServer(srv.id)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                      isActive
+                        ? 'bg-[#800020] text-white'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {isActive ? 'السيرفر الحالي' : 'التبديل إلى هذا السيرفر'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Docked Floating Bottom Player (appears when playing or active on RadioPage) */}
       <AnimatePresence>
-        {isPlaying && (
+        {isRadioPlaying && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -550,7 +463,7 @@ export default function RadioPage() {
                   إذاعة القرآن الكريم من القاهرة
                 </h4>
                 <p className="text-[11px] text-amber-300 truncate">
-                  بث مباشر · 98.2 FM · مصر 🇪🇬
+                  بث مباشر مستمر · 98.2 FM · مصر 🇪🇬
                 </p>
               </div>
             </div>
@@ -558,30 +471,30 @@ export default function RadioPage() {
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               <div className="hidden sm:flex items-center gap-2">
                 <button
-                  onClick={toggleMute}
+                  onClick={toggleRadioMute}
                   className="text-slate-400 hover:text-white p-1"
                 >
-                  {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  {isRadioMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </button>
                 <input
                   type="range"
                   min="0"
                   max="1"
                   step="0.05"
-                  value={isMuted ? 0 : volume}
-                  onChange={handleVolumeChange}
+                  value={isRadioMuted ? 0 : radioVolume}
+                  onChange={(e) => setRadioVolume(parseFloat(e.target.value))}
                   className="w-16 accent-[#800020] h-1.5 rounded-full cursor-pointer"
                 />
               </div>
 
               <button
-                onClick={handlePlay}
+                onClick={toggleRadio}
                 className="w-10 h-10 bg-[#800020] hover:bg-[#9c0027] rounded-full flex items-center justify-center text-white transition active:scale-95 shadow-md"
-                title={isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
+                title={isRadioPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
               >
-                {isLoading ? (
+                {isRadioLoading ? (
                   <Loader2 size={18} className="animate-spin text-white" />
-                ) : isPlaying ? (
+                ) : isRadioPlaying ? (
                   <Pause size={18} className="fill-current" />
                 ) : (
                   <Play size={18} className="fill-current mr-0.5" />
@@ -589,7 +502,7 @@ export default function RadioPage() {
               </button>
 
               <button
-                onClick={handleStop}
+                onClick={stopRadio}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-400 transition"
                 title="إغلاق البث"
               >

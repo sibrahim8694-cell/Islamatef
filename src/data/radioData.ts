@@ -83,6 +83,34 @@ export const CAIRO_PROGRAMS: IconicProgram[] = [
   }
 ];
 
+export interface RadioStreamServer {
+  id: string;
+  name: string;
+  url: string;
+  bitrate: string;
+}
+
+export const CAIRO_STREAM_SERVERS: RadioStreamServer[] = [
+  {
+    id: 'primary',
+    name: 'سيرفر أثير القاهرة 98.2 FM (البث الإذاعي المصري الرسمي)',
+    url: 'https://radio.xecod.com/station/quran-cairo',
+    bitrate: '32 kbps Live'
+  },
+  {
+    id: 'mirror1',
+    name: 'سيرفر التغذية الإذاعية السحابية الاحتياطي',
+    url: 'https://qurango.net/radio/mix',
+    bitrate: '128 kbps MP3'
+  },
+  {
+    id: 'mirror2',
+    name: 'سيرفر التلاوات والتراتيل الخاشعة المباشرة',
+    url: 'https://qurango.net/radio/tarateel',
+    bitrate: '128 kbps MP3'
+  }
+];
+
 // Single official radio station as requested by user
 export const RADIO_STATIONS: RadioStation[] = [
   {

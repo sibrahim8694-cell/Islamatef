@@ -1,103 +1,33 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Play, Pause, Download, Volume2, VolumeX, Loader2, SkipForward, SkipBack, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
-import { SURAHS, RECITERS, getSurahNumber, Reciter } from '../lib/quranData';
+import { SURAHS, RECITERS, Reciter } from '../lib/quranData';
+import { useGlobalAudio } from '../context/GlobalAudioContext';
 
 export default function QuranPage() {
-  const [selectedReciter, setSelectedReciter] = useState<Reciter>(RECITERS[0]);
-  const [playingSurah, setPlayingSurah] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [bufferedProgress, setBufferedProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const {
+    playingSurah,
+    selectedReciter,
+    isQuranPlaying,
+    isQuranLoading,
+    isQuranMuted,
+    quranProgress,
+    bufferedProgress,
+    quranCurrentTime,
+    quranDuration,
+    setSelectedReciter,
+    playSurah,
+    seekQuran,
+    playNextSurah,
+    playPrevSurah,
+    toggleQuranMute,
+    stopQuran,
+    getSurahAudioUrl
+  } = useGlobalAudio();
+
   const [downloadingSurah, setDownloadingSurah] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [hasTriedFallback, setHasTriedFallback] = useState(false);
-  
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const stallTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const retryCountRef = useRef<number>(0);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.preload = 'auto';
-    }
-  }, []);
-
-  const updateBufferedProgress = () => {
-    if (audioRef.current && audioRef.current.buffered.length > 0) {
-      const dur = audioRef.current.duration;
-      if (dur > 0) {
-        try {
-          const end = audioRef.current.buffered.end(audioRef.current.buffered.length - 1);
-          setBufferedProgress(Math.min(100, (end / dur) * 100));
-        } catch {}
-      }
-    }
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      const cur = audioRef.current.currentTime || 0;
-      const dur = audioRef.current.duration || 0;
-      setCurrentTime(cur);
-      setDuration(dur);
-      if (dur > 0) {
-        setProgress((cur / dur) * 100);
-      }
-      updateBufferedProgress();
-    }
-  };
-
-  const handleProgress = () => {
-    updateBufferedProgress();
-  };
-
-  const handleStalled = () => {
-    if (!isPlaying) return;
-    setIsLoading(true);
-    if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
-    stallTimerRef.current = setTimeout(async () => {
-      if (isPlaying && audioRef.current && playingSurah !== null) {
-        console.log("Stall detected, attempting to resume playback...");
-        try {
-          if (audioRef.current.paused) {
-            await audioRef.current.play();
-            setIsLoading(false);
-          }
-        } catch {
-          handleAudioError(new Error("Playback stalled"));
-        }
-      }
-    }, 3500);
-  };
-
-  // MediaSession API integration for uninterrupted background & lock-screen playback
-  useEffect(() => {
-    if ('mediaSession' in navigator && playingSurah !== null) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: `سورة ${SURAHS[playingSurah]}`,
-        artist: selectedReciter.name,
-        album: 'القرآن الكريم',
-        artwork: [
-          { src: 'https://i.imgur.com/sRBt7lJ.png', sizes: '512x512', type: 'image/png' }
-        ]
-      });
-      navigator.mediaSession.setActionHandler('play', () => {
-        audioRef.current?.play().then(() => setIsPlaying(true)).catch(() => {});
-      });
-      navigator.mediaSession.setActionHandler('pause', () => {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      });
-      navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
-      navigator.mediaSession.setActionHandler('previoustrack', () => playPrev());
-    }
-  }, [playingSurah, selectedReciter]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '00:00';
@@ -107,189 +37,23 @@ export default function QuranPage() {
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (audioRef.current && audioRef.current.duration) {
-      const newTime = (parseFloat(e.target.value) / 100) * audioRef.current.duration;
-      audioRef.current.currentTime = newTime;
-      setProgress(parseFloat(e.target.value));
-    }
+    seekQuran(parseFloat(e.target.value));
   };
 
-  const toggleMute = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+  const hasNextSurah = () => {
+    if (playingSurah === null) return false;
+    if (selectedReciter.availableSurahs) {
+      return selectedReciter.availableSurahs.some(idx => idx > playingSurah);
     }
+    return playingSurah < 113;
   };
 
-  const handleAudioError = async (e: any) => {
-    const errorMsg = e?.target?.error?.message || e?.message || "Audio playback error";
-    console.warn("Audio playback notice:", errorMsg);
-
-    if (playingSurah !== null) {
-      // 1. Try fallback server if available
-      if (!hasTriedFallback && selectedReciter.fallbackServer) {
-        setHasTriedFallback(true);
-        const fallbackUrl = getSurahAudioUrl(selectedReciter, playingSurah, true);
-        console.log("Attempting fallback URL:", fallbackUrl);
-        if (audioRef.current && fallbackUrl) {
-          audioRef.current.src = fallbackUrl;
-          audioRef.current.load();
-          try {
-            await audioRef.current.play();
-            setIsPlaying(true);
-            setIsLoading(false);
-            return;
-          } catch (retryErr: any) {
-            console.warn("Fallback audio load notice:", retryErr?.message || String(retryErr));
-          }
-        }
-      }
-
-      // 2. Retry with cache-buster parameter if temporary CDN glitch
-      if (retryCountRef.current < 2) {
-        retryCountRef.current += 1;
-        const freshUrl = `${getSurahAudioUrl(selectedReciter, playingSurah, false)}?retry=${Date.now()}`;
-        if (audioRef.current) {
-          audioRef.current.src = freshUrl;
-          audioRef.current.load();
-          try {
-            await audioRef.current.play();
-            setIsPlaying(true);
-            setIsLoading(false);
-            return;
-          } catch {}
-        }
-      }
+  const hasPrevSurah = () => {
+    if (playingSurah === null) return false;
+    if (selectedReciter.availableSurahs) {
+      return selectedReciter.availableSurahs.some(idx => idx < playingSurah);
     }
-
-    setIsPlaying(false);
-    setIsLoading(false);
-    
-    if (playingSurah !== null && !isPlaying) {
-      toast.error("تعذر تشغيل هذه السورة حالياً", {
-        description: "يرجى اختيار قارئ آخر أو محاولة التشغيل لاحقاً"
-      });
-    }
-  };
-
-  const getSurahAudioUrl = (reciter: Reciter, index: number, useFallback = false) => {
-    if (reciter.buildUrl) {
-      return reciter.buildUrl(index);
-    }
-    const server = useFallback && reciter.fallbackServer ? reciter.fallbackServer : reciter.server;
-    return `${server}/${getSurahNumber(index)}.mp3`;
-  };
-
-  const getNextSurahIndex = (currentIndex: number, reciter: Reciter = selectedReciter): number | null => {
-    if (reciter.availableSurahs) {
-      const sorted = [...reciter.availableSurahs].sort((a, b) => a - b);
-      const nextIdx = sorted.find(idx => idx > currentIndex);
-      return nextIdx !== undefined ? nextIdx : null;
-    }
-    return currentIndex < 113 ? currentIndex + 1 : null;
-  };
-
-  const getPrevSurahIndex = (currentIndex: number, reciter: Reciter = selectedReciter): number | null => {
-    if (reciter.availableSurahs) {
-      const sorted = [...reciter.availableSurahs].sort((a, b) => a - b);
-      const prevList = sorted.filter(idx => idx < currentIndex);
-      return prevList.length > 0 ? prevList[prevList.length - 1] : null;
-    }
-    return currentIndex > 0 ? currentIndex - 1 : null;
-  };
-
-  const playSurah = async (index: number, customReciter?: Reciter) => {
-    if (!audioRef.current) return;
-    const currentReciter = customReciter || selectedReciter;
-    
-    // Prevent playing unrecorded surahs for historical reciters
-    if (currentReciter.availableSurahs && !currentReciter.availableSurahs.includes(index)) {
-      setIsLoading(false);
-      toast.info(`سورة ${SURAHS[index]} غير متوفرة ضمن التسجيلات المحفوظة للشيخ ${currentReciter.name}`);
-      return;
-    }
-
-    try {
-      if (playingSurah === index && !customReciter) {
-        if (isPlaying) {
-          audioRef.current.pause();
-          setIsPlaying(false);
-        } else {
-          setIsLoading(true);
-          await audioRef.current.play();
-          setIsPlaying(true);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      setIsLoading(true);
-      setPlayingSurah(index);
-      setHasTriedFallback(false);
-      retryCountRef.current = 0;
-      setBufferedProgress(0);
-      
-      const primaryUrl = getSurahAudioUrl(currentReciter, index, false);
-      
-      if (!primaryUrl) {
-        setIsLoading(false);
-        toast.error("عذراً، هذه السورة غير متوفرة لهذا القارئ.");
-        return;
-      }
-
-      audioRef.current.src = primaryUrl;
-      audioRef.current.load();
-      
-      try {
-        await audioRef.current.play();
-        setIsPlaying(true);
-        setIsLoading(false);
-      } catch (playErr: any) {
-        // If primary URL failed, try fallback immediately if available
-        if (currentReciter.fallbackServer && !hasTriedFallback) {
-          setHasTriedFallback(true);
-          const fallbackUrl = getSurahAudioUrl(currentReciter, index, true);
-          if (fallbackUrl && audioRef.current) {
-            console.log("Attempting fallback URL:", fallbackUrl);
-            audioRef.current.src = fallbackUrl;
-            audioRef.current.load();
-            await audioRef.current.play();
-            setIsPlaying(true);
-            setIsLoading(false);
-            return;
-          }
-        }
-        throw playErr;
-      }
-    } catch (err: any) {
-      const errName = err?.name || '';
-      const errMsg = err?.message || String(err);
-      if (errName !== 'AbortError' && errName !== 'NotAllowedError') {
-        console.warn("Play surah notice:", errMsg);
-      }
-      setIsLoading(false);
-      setIsPlaying(false);
-    }
-  };
-
-  const playNext = () => {
-    if (playingSurah !== null) {
-      const next = getNextSurahIndex(playingSurah);
-      if (next !== null) {
-        playSurah(next);
-      } else {
-        toast.info("تم الوصول إلى آخر سورة مسجلة للشيخ");
-      }
-    }
-  };
-
-  const playPrev = () => {
-    if (playingSurah !== null) {
-      const prev = getPrevSurahIndex(playingSurah);
-      if (prev !== null) {
-        playSurah(prev);
-      }
-    }
+    return playingSurah > 0;
   };
 
   const forceDownload = async (index: number, e: React.MouseEvent) => {
@@ -300,14 +64,14 @@ export default function QuranPage() {
     
     if (!url) {
       setDownloadingSurah(null);
-      toast.error("عذراً، هذه السورة غير متوفرة لهذا القارئ.");
+      toast.error('عذراً، هذه السورة غير متوفرة لهذا القارئ.');
       return;
     }
     
     const filename = `سورة_${SURAHS[index]}_${selectedReciter.name}.mp3`;
     try {
       const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
+      if (!response.ok) throw new Error('Network response was not ok');
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -318,7 +82,7 @@ export default function QuranPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
     } catch (err: any) {
-      console.warn("Download fallback notice:", err?.message || String(err));
+      console.warn('Download fallback notice:', err?.message || String(err));
       window.open(url, '_blank');
     } finally {
       setDownloadingSurah(null);
@@ -331,23 +95,11 @@ export default function QuranPage() {
       // If currently playing surah is not in the new reciter's recorded surahs, pick the first available
       if (newReciter.availableSurahs && !newReciter.availableSurahs.includes(playingSurah)) {
         const firstAvail = newReciter.availableSurahs[0] ?? 0;
-        if (isPlaying) {
+        if (isQuranPlaying) {
           playSurah(firstAvail, newReciter);
-        } else {
-          setPlayingSurah(firstAvail);
-          if (audioRef.current) {
-            audioRef.current.src = getSurahAudioUrl(newReciter, firstAvail, false);
-            audioRef.current.load();
-          }
         }
-      } else {
-        if (isPlaying) {
-          playSurah(playingSurah, newReciter);
-        } else if (audioRef.current) {
-          const url = getSurahAudioUrl(newReciter, playingSurah, false);
-          audioRef.current.src = url;
-          audioRef.current.load();
-        }
+      } else if (isQuranPlaying) {
+        playSurah(playingSurah, newReciter);
       }
     }
   };
@@ -365,31 +117,13 @@ export default function QuranPage() {
     });
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-32" dir="rtl">
-      <audio 
-        ref={audioRef} 
-        crossOrigin="anonymous"
-        preload="auto"
-        onTimeUpdate={handleTimeUpdate} 
-        onProgress={handleProgress}
-        onEnded={() => playNext()}
-        onWaiting={() => setIsLoading(true)}
-        onStalled={handleStalled}
-        onCanPlay={() => {
-          setIsLoading(false);
-          updateBufferedProgress();
-        }}
-        onPlaying={() => {
-          setIsLoading(false);
-          setIsPlaying(true);
-        }}
-        onError={handleAudioError}
-      />
-
+    <div className="space-y-6 md:space-y-8 pb-32 select-none" dir="rtl">
       <div className="flex justify-between items-end mb-2">
         <div>
           <h2 className="text-3xl font-black text-slate-800 tracking-tight">القرآن الكريم</h2>
-          <p className="text-slate-500 text-base mt-1">استمع وحمل تلاوات خاشعة ومجودة لكبار القراء بأعلى جودة ودون تقطيع</p>
+          <p className="text-slate-500 text-base mt-1">
+            استمع وحمل تلاوات خاشعة ومجودة لكبار القراء كاملة بدون انقطاع وتعمل في الخلفية
+          </p>
         </div>
       </div>
 
@@ -407,7 +141,7 @@ export default function QuranPage() {
                 </span>
               ) : (
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] sm:text-xs font-bold">
-                  مصحف كامل 114 سورة (بدقة عالية)
+                  مصحف كامل 114 سورة (تلاوة متصلة بدون انقطاع)
                 </span>
               )}
             </div>
@@ -421,7 +155,7 @@ export default function QuranPage() {
             <div className="relative">
               <label className="block text-xs font-bold text-slate-600 mb-1.5">القارئ:</label>
               <select 
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 appearance-none font-bold text-slate-800 shadow-inner"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 appearance-none font-bold text-slate-800 shadow-inner cursor-pointer"
                 value={selectedReciter.id}
                 onChange={(e) => {
                   const reciter = RECITERS.find(r => r.id === parseInt(e.target.value));
@@ -537,8 +271,8 @@ export default function QuranPage() {
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 md:gap-4">
         {filteredSurahs.map(({ name: surahName, index }) => {
           const isCurrentActive = playingSurah === index;
-          const isCurrentPlaying = isCurrentActive && isPlaying;
-          const isCurrentLoading = isCurrentActive && isLoading;
+          const isCurrentPlaying = isCurrentActive && isQuranPlaying;
+          const isCurrentLoading = isCurrentActive && isQuranLoading;
           const dlUrl = getSurahAudioUrl(selectedReciter, index);
           
           return (
@@ -577,7 +311,7 @@ export default function QuranPage() {
                     ? 'bg-[#800020] text-white shadow-sm' 
                     : 'bg-rose-50 text-[#800020] hover:bg-rose-100 border border-rose-200/60'
                   }`}
-                  title={isCurrentPlaying ? "إيقاف مؤقت" : "تشغيل التلاوة"}
+                  title={isCurrentPlaying ? 'إيقاف مؤقت' : 'تشغيل التلاوة'}
                 >
                   {isCurrentLoading ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -633,7 +367,7 @@ export default function QuranPage() {
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             className="fixed bottom-[64px] lg:bottom-6 left-2 right-2 sm:left-4 sm:right-4 lg:left-1/2 lg:-translate-x-1/2 lg:w-full lg:max-w-3xl bg-slate-900/95 backdrop-blur-xl text-white rounded-2xl shadow-2xl border border-slate-700/90 z-40 overflow-hidden"
           >
             {/* Top Micro Progress Bar with Buffered Indicator */}
@@ -646,7 +380,7 @@ export default function QuranPage() {
               {/* Active playback progress bar */}
               <div 
                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-150 relative z-10"
-                style={{ width: `${progress || 0}%` }}
+                style={{ width: `${quranProgress || 0}%` }}
               />
             </div>
 
@@ -656,7 +390,7 @@ export default function QuranPage() {
                 {/* Surah Info */}
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Volume2 size={20} className={isPlaying ? "animate-pulse" : ""} />
+                    <Volume2 size={20} className={isQuranPlaying ? 'animate-pulse' : ''} />
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-black text-white truncate">
@@ -671,8 +405,8 @@ export default function QuranPage() {
                 {/* Main Controls (Previous, Play/Pause, Next) */}
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   <button 
-                    onClick={playPrev} 
-                    disabled={playingSurah === null || getPrevSurahIndex(playingSurah) === null}
+                    onClick={playPrevSurah} 
+                    disabled={!hasPrevSurah()}
                     className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-25 active:scale-90 transition touch-press"
                     title="السورة السابقة"
                     aria-label="السورة السابقة"
@@ -683,12 +417,12 @@ export default function QuranPage() {
                   <button 
                     onClick={() => playSurah(playingSurah)} 
                     className="w-11 h-11 bg-emerald-500 rounded-full flex items-center justify-center text-slate-950 hover:bg-emerald-400 transition transform active:scale-95 shadow-md shadow-emerald-500/25 touch-press"
-                    title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
-                    aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                    title={isQuranPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
+                    aria-label={isQuranPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
                   >
-                    {isLoading ? (
+                    {isQuranLoading ? (
                       <Loader2 size={22} className="animate-spin text-slate-950" />
-                    ) : isPlaying ? (
+                    ) : isQuranPlaying ? (
                       <Pause size={22} className="fill-current" />
                     ) : (
                       <Play size={22} className="fill-current mr-0.5" />
@@ -696,8 +430,8 @@ export default function QuranPage() {
                   </button>
 
                   <button 
-                    onClick={playNext} 
-                    disabled={playingSurah === null || getNextSurahIndex(playingSurah) === null}
+                    onClick={playNextSurah} 
+                    disabled={!hasNextSurah()}
                     className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-25 active:scale-90 transition touch-press"
                     title="السورة التالية"
                     aria-label="السورة التالية"
@@ -707,14 +441,7 @@ export default function QuranPage() {
 
                   {/* Close Player Button */}
                   <button 
-                    onClick={() => {
-                      if (audioRef.current) {
-                        audioRef.current.pause();
-                      }
-                      setIsPlaying(false);
-                      setPlayingSurah(null);
-                      setIsLoading(false);
-                    }} 
+                    onClick={stopQuran} 
                     className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-white/5 transition active:scale-90 touch-press mr-1"
                     title="إغلاق المشغل"
                     aria-label="إغلاق المشغل"
@@ -727,31 +454,31 @@ export default function QuranPage() {
               {/* Progress Slider Row & Actions */}
               <div className="flex items-center gap-2.5 text-xs">
                 <span className="font-mono text-slate-400 shrink-0 w-9 text-left tabular-nums text-[11px]">
-                  {formatTime(currentTime)}
+                  {formatTime(quranCurrentTime)}
                 </span>
                 
                 <input 
                   type="range" 
                   min="0" 
                   max="100" 
-                  value={progress || 0}
+                  value={quranProgress || 0}
                   onChange={handleSeek}
                   aria-label="شريط تقدم التلاوة"
                   className="w-full h-1.5 bg-slate-700/80 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:h-2 transition-all"
                 />
 
                 <span className="font-mono text-slate-400 shrink-0 w-9 text-right tabular-nums text-[11px]">
-                  {formatTime(duration)}
+                  {formatTime(quranDuration)}
                 </span>
 
                 <div className="flex items-center gap-1 shrink-0 border-r border-slate-700 pr-2 mr-1">
                   <button
-                    onClick={toggleMute}
+                    onClick={toggleQuranMute}
                     className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white transition active:scale-90 touch-press"
-                    title={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
-                    aria-label={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
+                    title={isQuranMuted ? 'إلغاء كتم الصوت' : 'كتم الصوت'}
+                    aria-label={isQuranMuted ? 'إلغاء كتم الصوت' : 'كتم الصوت'}
                   >
-                    {isMuted ? <VolumeX size={16} className="text-rose-400" /> : <Volume2 size={16} />}
+                    {isQuranMuted ? <VolumeX size={16} className="text-rose-400" /> : <Volume2 size={16} />}
                   </button>
 
                   <a 

@@ -15,6 +15,8 @@ import StudentsPage from './pages/StudentsPage';
 import KidsPage from './pages/KidsPage';
 import AzkarPage from './pages/AzkarPage';
 import { SplashScreen } from './components/SplashScreen';
+import { GlobalAudioProvider } from './context/GlobalAudioContext';
+import { GlobalMiniPlayer } from './components/GlobalMiniPlayer';
 
 const APK_DOWNLOAD_URL = 'https://median.co/share/mbeybbz#apk';
 
@@ -575,21 +577,24 @@ export default function App() {
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
   return (
-    <BrowserRouter>
-      {showSplash && (
-        <SplashScreen onFinish={() => setShowSplash(false)} />
-      )}
-      <Layout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/quran" element={<QuranPage />} />
-          <Route path="/radio" element={<RadioPage />} />
-          <Route path="/azkar" element={<AzkarPage />} />
-          <Route path="/english" element={<EnglishPage />} />
-          <Route path="/students" element={<StudentsPage />} />
-          <Route path="/kids" element={<KidsPage />} />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+    <GlobalAudioProvider>
+      <BrowserRouter>
+        {showSplash && (
+          <SplashScreen onFinish={() => setShowSplash(false)} />
+        )}
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/quran" element={<QuranPage />} />
+            <Route path="/radio" element={<RadioPage />} />
+            <Route path="/azkar" element={<AzkarPage />} />
+            <Route path="/english" element={<EnglishPage />} />
+            <Route path="/students" element={<StudentsPage />} />
+            <Route path="/kids" element={<KidsPage />} />
+          </Routes>
+        </Layout>
+        <GlobalMiniPlayer />
+      </BrowserRouter>
+    </GlobalAudioProvider>
   );
 }
